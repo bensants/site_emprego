@@ -1,12 +1,18 @@
 import mongoose from 'mongoose';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import User from './models/User.js';
 import Oportunidade from './models/Oportunidade.js';
 import Curriculo from './models/Curriculo.js';
 import Contrato from './models/Contrato.js';
 import PostComunidade from './models/PostComunidade.js';
 import SalaEntrevista from './models/SalaEntrevista.js';
+import Candidatura from './models/Candidatura.js';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const MONGODB_URI =
   process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/obidos-connect';
@@ -18,11 +24,53 @@ const seedData = async () => {
     console.log('Conectado. Limpando dados antigos...');
 
     await Promise.all([
+      User.deleteMany({}),
       Oportunidade.deleteMany({}),
       Curriculo.deleteMany({}),
       Contrato.deleteMany({}),
       PostComunidade.deleteMany({}),
       SalaEntrevista.deleteMany({}),
+      Candidatura.deleteMany({}),
+    ]);
+
+    console.log('Inserindo usuários padrão...');
+    const users = await User.create([
+      {
+        nome: 'Mayara Albuquerque Pauxis',
+        email: 'mayara.pauxis@obidos.com.br',
+        senha: 'obidos123',
+        tipo: 'candidato',
+        telefone: '(93) 98412-3456',
+        cidade: 'Óbidos',
+        estado: 'PA',
+        profissao: 'Engenheira de Software Full Stack',
+        organizacao: 'Cooperativa Agroextrativista de Óbidos (COOPAO)',
+        bio: 'Desenvolvedora apaixonada por soluções tecnológicas para cooperativas e negócios do Baixo Amazonas.',
+      },
+      {
+        nome: 'Cooperativa Agroextrativista de Óbidos (COOPAO)',
+        email: 'coopao@obidos.com.br',
+        senha: 'obidos123',
+        tipo: 'empresa',
+        telefone: '(93) 98111-2233',
+        cidade: 'Óbidos',
+        estado: 'PA',
+        profissao: 'Gestão Cooperativista',
+        organizacao: 'COOPAO',
+        bio: 'Cooperativa de produtores e extrativistas locais de castanha, cacau e açaí em Óbidos e comunidades ribeirinhas.',
+      },
+      {
+        nome: 'Administrador Óbidos Conect',
+        email: 'admin@obidos.com.br',
+        senha: 'obidos123',
+        tipo: 'admin',
+        telefone: '(93) 98100-0000',
+        cidade: 'Óbidos',
+        estado: 'PA',
+        profissao: 'Administrador da Plataforma',
+        organizacao: 'Óbidos Conect Tech',
+        bio: 'Equipe de governança e suporte técnico regional.',
+      },
     ]);
 
     console.log('Inserindo oportunidades...');
@@ -234,6 +282,32 @@ const seedData = async () => {
           },
         ],
         visibilidade: 'publico',
+      },
+    ]);
+
+    console.log('Inserindo candidaturas de teste...');
+    await Candidatura.insertMany([
+      {
+        oportunidade_id: oportunidades[0]._id,
+        candidato_id: users[0]._id,
+        candidato_nome: users[0].nome,
+        candidato_email: users[0].email,
+        candidato_telefone: users[0].telefone,
+        candidato_profissao: users[0].profissao,
+        curriculo_id: curriculos[0]._id,
+        mensagem: 'Olá equipe da COOPAO! Possuo ampla experiência com Node.js e React no Baixo Amazonas e adoraria contribuir com a rastreabilidade da safra de castanha e cacau.',
+        status: 'em_analise',
+      },
+      {
+        oportunidade_id: oportunidades[2]._id,
+        candidato_id: users[0]._id,
+        candidato_nome: 'Gabriel Souza Marinho',
+        candidato_email: 'gabriel.marinho@design.com',
+        candidato_telefone: '(93) 98177-6543',
+        candidato_profissao: 'Designer e Ilustrador Cultural',
+        curriculo_id: curriculos[2]._id,
+        mensagem: 'Tenho interesse total em criar as artes do Carnapauxis 2026. Já produzi identidades para vários blocos locais!',
+        status: 'entrevista',
       },
     ]);
 

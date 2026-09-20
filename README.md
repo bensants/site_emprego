@@ -7,19 +7,26 @@
 ## 🚀 Tecnologias Utilizadas
 
 ### Frontend (`/frontend`)
-- **React 18** + **Vite** (porta 5173)
+- **React 18** + **Vite** (porta 5173 / Docker Nginx porta 80)
 - **Tailwind CSS** com sistema de design e tokens semânticos HSL no estilo **shadcn/ui**
-- **React Router v6** (navegação SPA completa)
+- **React Router v6** (navegação SPA completa com proteção de rotas)
 - **TanStack React Query v5** (`useQuery` para leitura, `useMutation` + `invalidateQueries` para escrita)
-- **Axios** (instância pré-configurada em `src/api/api.js`)
+- **Sonner** (sistema moderno de notificações toast reativas)
+- **Axios** (instância com interceptor automático de token JWT `Bearer`)
 - **Lucide React** (iconografia moderna)
 
 ### Backend (`/backend`)
-- **Node.js** em modo ESM (`"type": "module"`) (porta 5000)
-- **Express** com **CORS** configurado para `http://localhost:5173`
-- **Mongoose** com `timestamps: true` em todos os modelos
-- **Nodemon** para recarregamento em desenvolvimento
-- **MongoDB Atlas** (ou banco local)
+- **Node.js 20** em modo ESM (`"type": "module"`) (porta 5000)
+- **Express** com **CORS** dinâmico e healthcheck `/api/health`
+- **Autenticação JWT** (`jsonwebtoken`) + Criptografia **bcryptjs**
+- **Mongoose 8** com sanitização contra ReDoS e índices compostos
+- **MongoDB Atlas** (ou container Docker local)
+
+### DevOps & Produção (`/`)
+- **Docker & Docker Compose** (orquestração completa com backend, frontend Nginx e MongoDB)
+- **Nginx Alpine** (compressão Gzip, cache de assets estáticos e SPA fallback)
+- **GitHub Actions CI** (validação sintática de backend e build do frontend)
+- **Guia de Deploy em Produção** ([DEPLOY.md](file:///home/brener_santos/Projects/Projetos/site_emprego/DEPLOY.md))
 
 ---
 
@@ -88,82 +95,76 @@ Work/
 
 ## 🛠️ Passo a Passo para Execução
 
-### 1. Pré-requisitos
-- **Node.js** (v18+) e **npm** instalados.
-- Conta no **MongoDB Atlas** (ou MongoDB local em execução).
+### Opção A: Execução com Docker & Docker Compose (Recomendado)
+
+Suba toda a infraestrutura (Backend, Frontend Nginx e MongoDB) com um único comando:
+
+```bash
+# 1. Copiar variáveis de ambiente do Docker
+cp .env.docker.example .env
+
+# 2. Subir todos os containers
+docker compose up -d --build
+
+# 3. (Opcional) Popular dados de teste e contas de demonstração
+docker compose exec backend npm run seed
+```
+
+- **Frontend Web**: [http://localhost](http://localhost) (porta 80)
+- **Backend API**: [http://localhost:5000/api](http://localhost:5000/api)
+- **Health Check**: [http://localhost:5000/api/health](http://localhost:5000/api/health)
 
 ---
 
-### 2. Configurar o Backend
+### Opção B: Execução em Desenvolvimento Local (Node.js)
 
-1. Acesse o diretório do backend:
-   ```bash
-   cd backend
-   ```
+#### 1. Backend:
+```bash
+cd backend
+cp .env.example .env     # configure sua MONGODB_URI e JWT_SECRET
+npm install
+npm run seed             # popula vagas e contas de teste
+npm run dev              # inicia na porta 5000
+```
 
-2. Crie ou configure o arquivo `.env`:
-   ```bash
-   cp .env.example .env
-   ```
+#### 2. Frontend:
+```bash
+cd frontend
+cp .env.example .env     # VITE_API_URL=http://localhost:5000/api
+npm install
+npm run dev              # inicia na porta 5173
+```
 
-3. No arquivo `.env`, insira a sua string de conexão do **MongoDB Atlas**:
-   ```env
-   PORT=5000
-   CLIENT_ORIGIN=http://localhost:5173
-   NODE_ENV=development
-   MONGODB_URI=mongodb+srv://<usuario>:<senha>@<cluster>.mongodb.net/obidos-connect?retryWrites=true&w=majority
-   ```
-
-4. Instale as dependências (já instaladas):
-   ```bash
-   npm install
-   ```
-
-5. (Opcional, recomendado) Popule o banco de dados com dados realistas da região de Óbidos (cooperativas, transporte fluvial, pecuária, comércio e serviços):
-   ```bash
-   npm run seed
-   ```
-
-6. Inicie o servidor em modo desenvolvimento (com recarregamento automático):
-   ```bash
-   npm run dev
-   ```
-   > O servidor estará rodando em: `http://localhost:5000`  
-   > Status da API em: `http://localhost:5000/api`
+Acesse: [http://localhost:5173](http://localhost:5173)
 
 ---
 
-### 3. Configurar e Iniciar o Frontend
+### 🔑 Contas de Teste Pré-Cadastradas (Seed)
 
-1. Em um novo terminal, acesse a pasta do frontend:
-   ```bash
-   cd frontend
-   ```
-
-2. Instale as dependências (já instaladas):
-   ```bash
-   npm install
-   ```
-
-3. Inicie o servidor de desenvolvimento do Vite:
-   ```bash
-   npm run dev
-   ```
-
-4. Abra no navegador:
-   ```text
-   http://localhost:5173
-   ```
+| Papel | E-mail | Senha |
+|---|---|---|
+| 💼 **Candidata** | `mayara.pauxis@obidos.com.br` | `obidos123` |
+| 🏢 **Empresa** | `coopao@obidos.com.br` | `obidos123` |
+| 🛡️ **Administrador** | `admin@obidos.com.br` | `obidos123` |
 
 ---
 
 ## 📡 Recursos e Rotas da API REST (`http://localhost:5000/api`)
 
-Cada um dos 5 recursos possui CRUD completo implementado com Mongoose (`timestamps: true`) e identificador `_id`:
+Cada recurso possui integração Mongoose (`timestamps: true`) e identificador `_id`:
 
 | Recurso | Método | Rota | Descrição |
 |---|---|---|---|
-| **Oportunidades** | `GET` | `/api/oportunidades` | Lista oportunidades (suporta `?search=`, `?tipo=`, `?modalidade=`) |
+| **Autenticação** | `POST` | `/api/auth/register` | Registro de novo usuário (Candidato ou Empresa) |
+| | `POST` | `/api/auth/login` | Login com e-mail e senha (retorna JWT) |
+| | `GET` | `/api/auth/me` | Retorna dados do usuário autenticado |
+| | `PUT` | `/api/auth/me` | Atualiza perfil cadastral do usuário |
+| **Candidaturas** | `POST` | `/api/candidaturas` | Candidatar-se a uma vaga (com mensagem e currículo) |
+| | `GET` | `/api/candidaturas/minhas` | Lista as candidaturas enviadas pelo profissional logado |
+| | `GET` | `/api/candidaturas/oportunidade/:id` | Lista candidatos de uma oportunidade (visão empresa) |
+| | `PATCH` | `/api/candidaturas/:id/status` | Atualiza status da candidatura (triagem seletiva) |
+| | `DELETE` | `/api/candidaturas/:id` | Cancelar inscrição em uma oportunidade |
+| **Oportunidades** | `GET` | `/api/oportunidades` | Lista oportunidades (suporta `?search=`, `?tipo=`, `?modalidade=`, `?page=`, `?limit=`) |
 | | `GET` | `/api/oportunidades/:id` | Detalhes de uma oportunidade |
 | | `POST` | `/api/oportunidades` | Cadastro de nova vaga/demanda |
 | | `PUT` | `/api/oportunidades/:id` | Atualização cadastral |

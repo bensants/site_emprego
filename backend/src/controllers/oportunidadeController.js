@@ -1,16 +1,18 @@
 import Oportunidade from '../models/Oportunidade.js';
+import { escapeRegex } from '../utils/sanitize.js';
 
 export const getAll = async (req, res) => {
   try {
-    const { search, tipo, modalidade, categoria } = req.query;
+    const { search, tipo, modalidade, categoria, page, limit } = req.query;
     const filter = {};
 
     if (search) {
+      const sanitized = escapeRegex(search);
       filter.$or = [
-        { titulo: { $regex: search, $options: 'i' } },
-        { descricao: { $regex: search, $options: 'i' } },
-        { empresa: { $regex: search, $options: 'i' } },
-        { categoria: { $regex: search, $options: 'i' } },
+        { titulo: { $regex: sanitized, $options: 'i' } },
+        { descricao: { $regex: sanitized, $options: 'i' } },
+        { empresa: { $regex: sanitized, $options: 'i' } },
+        { categoria: { $regex: sanitized, $options: 'i' } },
       ];
     }
 
@@ -23,7 +25,29 @@ export const getAll = async (req, res) => {
     }
 
     if (categoria && categoria !== 'todas') {
-      filter.categoria = { $regex: categoria, $options: 'i' };
+      filter.categoria = { $regex: escapeRegex(categoria), $options: 'i' };
+    }
+
+    // Se parâmetros de paginação forem passados
+    if (page || limit) {
+      const pageNum = Math.max(1, parseInt(page, 10) || 1);
+      const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
+      const skip = (pageNum - 1) * limitNum;
+
+      const [total, items] = await Promise.all([
+        Oportunidade.countDocuments(filter),
+        Oportunidade.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+      ]);
+
+      return res.json({
+        data: items,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum),
+        },
+      });
     }
 
     const oportunidades = await Oportunidade.find(filter).sort({ createdAt: -1 });
@@ -47,7 +71,14 @@ export const getById = async (req, res) => {
 
 export const create = async (req, res) => {
   try {
-    const oportunidade = new Oportunidade(req.body);
+    const dados = { ...req.body };
+    if (req.user) {
+      dados.usuario_id = req.user._id;
+      if (!dados.empresa && req.user.organizacao) {
+        dados.empresa = req.user.organizacao;
+      }
+    }
+    const oportunidade = new Oportunidade(dados);
     const saved = await oportunidade.save();
     res.status(201).json(saved);
   } catch (error) {

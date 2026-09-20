@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   User,
   Mail,
@@ -10,15 +11,21 @@ import {
   Sparkles,
   ShieldCheck,
   Building,
+  LogIn,
+  AlertCircle,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { useAuth } from '@/context/AuthContext';
+import { authApi } from '@/api/api';
 
 const STORAGE_KEY = 'obidos_connect_user_profile';
 
 export default function Perfil() {
+  const { user, isAuthenticated, updateUser } = useAuth();
+
   const [profile, setProfile] = useState({
     nome: 'Mayara Albuquerque Pauxis',
     email: 'mayara.pauxis@obidos.com.br',
@@ -31,30 +38,62 @@ export default function Perfil() {
   });
 
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        setProfile(JSON.parse(saved));
-      } catch (err) {
-        console.error('Erro ao ler perfil do localStorage:', err);
+    if (user) {
+      setProfile({
+        nome: user.nome || '',
+        email: user.email || '',
+        telefone: user.telefone || '',
+        profissao: user.profissao || '',
+        cidade: user.cidade || 'Óbidos',
+        estado: user.estado || 'PA',
+        bio: user.bio || '',
+        organizacao: user.organizacao || '',
+      });
+    } else {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          setProfile(JSON.parse(saved));
+        } catch (err) {
+          console.error('Erro ao ler perfil do localStorage:', err);
+        }
       }
     }
-  }, []);
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfile((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
-    setSavedSuccess(true);
-    setTimeout(() => {
-      setSavedSuccess(false);
-    }, 4000);
+    setError('');
+    setLoading(true);
+
+    try {
+      if (isAuthenticated) {
+        const response = await authApi.updateMe(profile);
+        updateUser(response.user);
+      } else {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+      }
+
+      setSavedSuccess(true);
+      setTimeout(() => {
+        setSavedSuccess(false);
+      }, 4000);
+    } catch (err) {
+      setError(
+        err?.response?.data?.message || 'Erro ao atualizar dados do perfil. Tente novamente.'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -69,20 +108,46 @@ export default function Perfil() {
         </p>
       </div>
 
+      {/* Alerta de conta não vinculada se não autenticado */}
+      {!isAuthenticated && (
+        <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs sm:text-sm flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
+            <span>
+              Você está editando um perfil local não salvo na nuvem.{' '}
+              <strong>Faça login ou crie uma conta</strong> para salvar seus dados com segurança.
+            </span>
+          </div>
+          <Link
+            to="/login"
+            className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shrink-0 shadow-sm"
+          >
+            Fazer Login
+          </Link>
+        </div>
+      )}
+
       {/* Success Notification */}
       {savedSuccess && (
         <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center gap-2 animate-in fade-in">
           <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-          <span>Perfil atualizado com sucesso! As alterações já estão ativas na plataforma.</span>
+          <span>Perfil atualizado com sucesso! As alterações já estão sincronizadas no banco de dados.</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-center gap-2 animate-in fade-in">
+          <AlertCircle className="h-5 w-5 text-rose-600 shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Left Column: Avatar & Mini Preview */}
         <div className="md:col-span-1 space-y-4">
-          <Card className="border-slate-200/80 bg-white text-center p-6">
+          <Card className="border-slate-200/80 bg-white text-center p-6 shadow-sm">
             <div className="mx-auto h-24 w-24 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-3xl font-extrabold shadow-lg shadow-blue-500/20 mb-4">
-              {profile.nome ? profile.nome.charAt(0) : 'U'}
+              {profile.nome ? profile.nome.charAt(0).toUpperCase() : 'U'}
             </div>
             <h3 className="font-bold text-slate-900 text-lg">{profile.nome || 'Seu Nome'}</h3>
             <p className="text-xs font-semibold text-blue-700 mt-0.5">
@@ -119,7 +184,7 @@ export default function Perfil() {
 
         {/* Right Column: Formulário de Perfil */}
         <div className="md:col-span-2">
-          <Card className="border-slate-200/80 bg-white">
+          <Card className="border-slate-200/80 bg-white shadow-sm">
             <CardHeader>
               <CardTitle>Informações Cadastrais</CardTitle>
               <CardDescription>
@@ -180,10 +245,12 @@ export default function Perfil() {
                     <Input
                       type="email"
                       required
+                      disabled={isAuthenticated} // E-mail é a chave da conta
                       name="email"
                       value={profile.email}
                       onChange={handleChange}
                       placeholder="seuemail@exemplo.com"
+                      className={isAuthenticated ? 'bg-slate-100 cursor-not-allowed text-slate-500' : ''}
                     />
                   </div>
 
@@ -247,8 +314,8 @@ export default function Perfil() {
             </CardContent>
 
             <CardFooter className="flex justify-end gap-3 pt-3 border-t border-slate-100">
-              <Button type="submit" form="perfil-form" className="gap-2">
-                <Save className="h-4 w-4" /> Salvar Alterações
+              <Button type="submit" form="perfil-form" disabled={loading} className="gap-2 bg-blue-600 hover:bg-blue-700">
+                <Save className="h-4 w-4" /> {loading ? 'Salvando...' : 'Salvar Alterações'}
               </Button>
             </CardFooter>
           </Card>

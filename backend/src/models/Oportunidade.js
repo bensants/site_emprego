@@ -59,11 +59,16 @@ const OportunidadeSchema = new mongoose.Schema(
       default: 'aberta',
       trim: true,
     },
+    usuario_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-export default mongoose.model('obidos-connect', OportunidadeSchema);
+export default mongoose.model('Oportunidade', OportunidadeSchema);
 

@@ -1,4 +1,5 @@
 import Contrato from '../models/Contrato.js';
+import { escapeRegex } from '../utils/sanitize.js';
 
 export const getAll = async (req, res) => {
   try {
@@ -10,11 +11,12 @@ export const getAll = async (req, res) => {
     }
 
     if (search) {
+      const sanitized = escapeRegex(search);
       filter.$or = [
-        { titulo: { $regex: search, $options: 'i' } },
-        { contratante_nome: { $regex: search, $options: 'i' } },
-        { contratado_nome: { $regex: search, $options: 'i' } },
-        { escopo_trabalho: { $regex: search, $options: 'i' } },
+        { titulo: { $regex: sanitized, $options: 'i' } },
+        { contratante_nome: { $regex: sanitized, $options: 'i' } },
+        { contratado_nome: { $regex: sanitized, $options: 'i' } },
+        { escopo_trabalho: { $regex: sanitized, $options: 'i' } },
       ];
     }
 
@@ -39,7 +41,14 @@ export const getById = async (req, res) => {
 
 export const create = async (req, res) => {
   try {
-    const contrato = new Contrato(req.body);
+    const dados = { ...req.body };
+    if (req.user) {
+      dados.contratante_id = req.user._id.toString();
+      if (!dados.contratante_nome) {
+        dados.contratante_nome = req.user.organizacao || req.user.nome;
+      }
+    }
+    const contrato = new Contrato(dados);
     const saved = await contrato.save();
     res.status(201).json(saved);
   } catch (error) {

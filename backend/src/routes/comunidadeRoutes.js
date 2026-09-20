@@ -7,14 +7,15 @@ import {
   remove,
   curtir,
 } from '../controllers/comunidadeController.js';
+import { optionalAuth } from '../middlewares/authMiddleware.js';
 
 const router = Router();
 
 router.get('/', getAll);
 router.get('/:id', getById);
-router.post('/', create);
-router.put('/:id', update);
-router.delete('/:id', remove);
+router.post('/', optionalAuth, create);
+router.put('/:id', optionalAuth, update);
+router.delete('/:id', optionalAuth, remove);
 router.post('/:id/curtir', curtir);
 
 export default router;

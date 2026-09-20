@@ -14,6 +14,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { curriculosApi } from '@/api/api';
+import { getWhatsAppLink } from '@/lib/whatsapp';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -97,91 +98,109 @@ export default function BuscarProfissionais() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {curriculos.map((curr) => (
-            <Card
-              key={curr._id}
-              className="flex flex-col justify-between border-slate-200/80 bg-white shadow-sm hover:border-blue-300"
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-start gap-3">
-                  <div className="h-12 w-12 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-base shadow-sm shrink-0">
-                    {curr.nome_candidato?.charAt(0) || 'P'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-base font-bold text-slate-900 truncate">
-                      {curr.nome_candidato || 'Profissional de Óbidos'}
-                    </CardTitle>
-                    <p className="text-xs font-semibold text-blue-700 truncate mt-0.5">
-                      {curr.titulo}
-                    </p>
-                    <div className="flex items-center gap-1 text-[11px] text-slate-500 mt-1">
-                      <MapPin className="h-3 w-3 text-slate-400" />
-                      <span>
-                        {curr.cidade || 'Óbidos'}, {curr.estado || 'PA'}
-                      </span>
+          {curriculos.map((curr) => {
+            const whatsappUrl = getWhatsAppLink(
+              curr.telefone,
+              `Olá ${curr.nome_candidato}, encontrei seu perfil profissional no Óbidos Conect e gostaria de conversar!`
+            );
+
+            return (
+              <Card
+                key={curr._id}
+                className="flex flex-col justify-between border-slate-200/80 bg-white shadow-sm hover:border-blue-300 transition-all hover:shadow-md"
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-start gap-3">
+                    <div className="h-12 w-12 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-base shadow-sm shrink-0">
+                      {curr.nome_candidato?.charAt(0) || 'P'}
                     </div>
-                  </div>
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-3.5 text-xs text-slate-600 pb-3">
-                {curr.resumo_profissional && (
-                  <p className="line-clamp-3 text-slate-600 leading-relaxed italic">
-                    "{curr.resumo_profissional}"
-                  </p>
-                )}
-
-                {/* Habilidades em Badges */}
-                <div>
-                  <span className="font-semibold text-slate-700 block mb-1 text-[11px]">
-                    Habilidades:
-                  </span>
-                  <div className="flex flex-wrap gap-1">
-                    {curr.habilidades && curr.habilidades.length > 0 ? (
-                      curr.habilidades.slice(0, 5).map((hab, idx) => (
-                        <span
-                          key={idx}
-                          className="bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-md text-[11px] font-medium"
-                        >
-                          {hab}
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-base font-bold text-slate-900 truncate">
+                        {curr.nome_candidato || 'Profissional de Óbidos'}
+                      </CardTitle>
+                      <p className="text-xs font-semibold text-blue-700 truncate mt-0.5">
+                        {curr.titulo}
+                      </p>
+                      <div className="flex items-center gap-1 text-[11px] text-slate-500 mt-1">
+                        <MapPin className="h-3 w-3 text-slate-400" />
+                        <span>
+                          {curr.cidade || 'Óbidos'}, {curr.estado || 'PA'}
                         </span>
-                      ))
-                    ) : (
-                      <span className="text-slate-400 text-[11px]">Nenhuma informada</span>
-                    )}
-                    {curr.habilidades?.length > 5 && (
-                      <span className="text-slate-500 text-[11px] self-center">
-                        +{curr.habilidades.length - 5}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Última Experiência */}
-                {curr.experiencias && curr.experiencias.length > 0 && (
-                  <div className="pt-2 border-t border-slate-100">
-                    <div className="flex items-center gap-1.5 text-slate-800 font-medium text-[11px]">
-                      <Briefcase className="h-3 w-3 text-slate-400" />
-                      <span className="truncate">
-                        {curr.experiencias[0].cargo} na {curr.experiencias[0].empresa}
-                      </span>
+                      </div>
                     </div>
                   </div>
-                )}
-              </CardContent>
+                </CardHeader>
 
-              <CardFooter className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-full text-xs"
-                  onClick={() => setSelectedCurriculo(curr)}
-                >
-                  Ver Perfil Completo
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+                <CardContent className="space-y-3.5 text-xs text-slate-600 pb-3">
+                  {curr.resumo_profissional && (
+                    <p className="line-clamp-3 text-slate-600 leading-relaxed italic">
+                      "{curr.resumo_profissional}"
+                    </p>
+                  )}
+
+                  {/* Habilidades em Badges */}
+                  <div>
+                    <span className="font-semibold text-slate-700 block mb-1 text-[11px]">
+                      Habilidades:
+                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {curr.habilidades && curr.habilidades.length > 0 ? (
+                        curr.habilidades.slice(0, 5).map((hab, idx) => (
+                          <span
+                            key={idx}
+                            className="bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-md text-[11px] font-medium"
+                          >
+                            {hab}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-slate-400 text-[11px]">Nenhuma informada</span>
+                      )}
+                      {curr.habilidades?.length > 5 && (
+                        <span className="text-slate-500 text-[11px] self-center">
+                          +{curr.habilidades.length - 5}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Última Experiência */}
+                  {curr.experiencias && curr.experiencias.length > 0 && (
+                    <div className="pt-2 border-t border-slate-100">
+                      <div className="flex items-center gap-1.5 text-slate-800 font-medium text-[11px]">
+                        <Briefcase className="h-3 w-3 text-slate-400" />
+                        <span className="truncate">
+                          {curr.experiencias[0].cargo} na {curr.experiencias[0].empresa}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+
+                <CardFooter className="pt-2.5 border-t border-slate-100 flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 text-xs"
+                    onClick={() => setSelectedCurriculo(curr)}
+                  >
+                    Ver Perfil
+                  </Button>
+                  {whatsappUrl && (
+                    <a
+                      href={whatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Conversar no WhatsApp"
+                      className="p-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                    </a>
+                  )}
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       )}
 
@@ -193,16 +212,33 @@ export default function BuscarProfissionais() {
         {selectedCurriculo && (
           <DialogContent onClose={() => setSelectedCurriculo(null)}>
             <DialogHeader>
-              <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg">
-                  {selectedCurriculo.nome_candidato?.charAt(0) || 'P'}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg">
+                    {selectedCurriculo.nome_candidato?.charAt(0) || 'P'}
+                  </div>
+                  <div>
+                    <DialogTitle>{selectedCurriculo.nome_candidato}</DialogTitle>
+                    <p className="text-xs font-semibold text-blue-700">
+                      {selectedCurriculo.titulo}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <DialogTitle>{selectedCurriculo.nome_candidato}</DialogTitle>
-                  <p className="text-xs font-semibold text-blue-700">
-                    {selectedCurriculo.titulo}
-                  </p>
-                </div>
+
+                {getWhatsAppLink(selectedCurriculo.telefone) && (
+                  <a
+                    href={getWhatsAppLink(
+                      selectedCurriculo.telefone,
+                      `Olá ${selectedCurriculo.nome_candidato}, vi seu currículo no Óbidos Conect e gostaria de conversar sobre oportunidades!`
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition-all"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    WhatsApp
+                  </a>
+                )}
               </div>
             </DialogHeader>
 

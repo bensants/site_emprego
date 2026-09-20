@@ -1,21 +1,58 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: 15000,
 });
 
-// Interceptor para logs ou tratamentos em desenvolvimento
+// Interceptor de requisição: injeta token de autenticação se disponível
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('obidos_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Interceptor de resposta para logs ou tratamento de expiração
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (error?.response?.status === 401 && localStorage.getItem('obidos_token')) {
+      // Token expirou ou é inválido
+      console.warn('Sessão expirada. Limpando token...');
+      localStorage.removeItem('obidos_token');
+      localStorage.removeItem('obidos_user');
+      // Não redireciona forçadamente para não quebrar leitura de páginas públicas
+    }
     console.error('Erro na requisição Axios:', error?.response?.data || error.message);
     return Promise.reject(error);
   }
 );
+
+// Endpoints de Autenticação
+export const authApi = {
+  login: (credentials) => api.post('/auth/login', credentials).then((res) => res.data),
+  register: (data) => api.post('/auth/register', data).then((res) => res.data),
+  getMe: () => api.get('/auth/me').then((res) => res.data),
+  updateMe: (data) => api.put('/auth/me', data).then((res) => res.data),
+};
+
+// Endpoints de Candidaturas
+export const candidaturasApi = {
+  apply: (data) => api.post('/candidaturas', data).then((res) => res.data),
+  getMinhas: () => api.get('/candidaturas/minhas').then((res) => res.data),
+  getByOportunidade: (oportunidadeId) => api.get(`/candidaturas/oportunidade/${oportunidadeId}`).then((res) => res.data),
+  updateStatus: (id, data) => api.patch(`/candidaturas/${id}/status`, typeof data === 'string' ? { status: data } : data).then((res) => res.data),
+  agendarEntrevista: (id, data) => api.post(`/candidaturas/${id}/agendar-entrevista`, data).then((res) => res.data),
+  cancelar: (id) => api.delete(`/candidaturas/${id}`).then((res) => res.data),
+};
 
 // Endpoints de Oportunidades
 export const oportunidadesApi = {

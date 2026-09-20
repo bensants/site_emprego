@@ -73,6 +73,11 @@ const CurriculoSchema = new mongoose.Schema(
       enum: ['publico', 'privado'],
       default: 'publico',
     },
+    usuario_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
   },
   {
     timestamps: true,

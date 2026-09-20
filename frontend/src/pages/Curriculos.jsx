@@ -13,8 +13,12 @@ import {
   Briefcase,
   AlertCircle,
   Sparkles,
+  MessageCircle,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { curriculosApi } from '@/api/api';
+import { useAuth } from '@/context/AuthContext';
+import { getWhatsAppLink } from '@/lib/whatsapp';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,22 +36,23 @@ import {
 
 export default function Curriculos() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
   const initialForm = {
-    titulo: '',
-    nome_candidato: '',
-    email: '',
-    telefone: '',
-    cidade: 'Óbidos',
-    estado: 'PA',
-    resumo_profissional: '',
+    titulo: user?.profissao || '',
+    nome_candidato: user?.nome || '',
+    email: user?.email || '',
+    telefone: user?.telefone || '',
+    cidade: user?.cidade || 'Óbidos',
+    estado: user?.estado || 'PA',
+    resumo_profissional: user?.bio || '',
     habilidades: '',
     visibilidade: 'publico',
     // Uma experiência padrão simplificada
-    exp_empresa: '',
-    exp_cargo: '',
+    exp_empresa: user?.organizacao || '',
+    exp_cargo: user?.profissao || '',
     exp_periodo: '',
     exp_descricao: '',
     // Uma formação padrão
@@ -79,6 +84,10 @@ export default function Curriculos() {
       setIsModalOpen(false);
       setEditingId(null);
       setForm(initialForm);
+      toast.success(editingId ? 'Currículo atualizado com sucesso!' : 'Currículo cadastrado com sucesso!');
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Erro ao salvar currículo');
     },
   });
 
@@ -88,6 +97,10 @@ export default function Curriculos() {
       queryClient.invalidateQueries({ queryKey: ['curriculos-admin'] });
       queryClient.invalidateQueries({ queryKey: ['curriculos'] });
       queryClient.invalidateQueries({ queryKey: ['buscar-curriculos'] });
+      toast.success('Currículo excluído com sucesso');
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Erro ao excluir currículo');
     },
   });
 
@@ -100,12 +113,27 @@ export default function Curriculos() {
       queryClient.invalidateQueries({ queryKey: ['curriculos-admin'] });
       queryClient.invalidateQueries({ queryKey: ['curriculos'] });
       queryClient.invalidateQueries({ queryKey: ['buscar-curriculos'] });
+      toast.success('Visibilidade do currículo alterada!');
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Erro ao alterar visibilidade');
     },
   });
 
   const handleOpenCreate = () => {
     setEditingId(null);
-    setForm(initialForm);
+    setForm({
+      ...initialForm,
+      titulo: user?.profissao || '',
+      nome_candidato: user?.nome || '',
+      email: user?.email || '',
+      telefone: user?.telefone || '',
+      cidade: user?.cidade || 'Óbidos',
+      estado: user?.estado || 'PA',
+      resumo_profissional: user?.bio || '',
+      exp_empresa: user?.organizacao || '',
+      exp_cargo: user?.profissao || '',
+    });
     setIsModalOpen(true);
   };
 

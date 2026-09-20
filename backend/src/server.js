@@ -2,14 +2,20 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+import authRoutes from './routes/authRoutes.js';
+import candidaturaRoutes from './routes/candidaturaRoutes.js';
 import oportunidadeRoutes from './routes/oportunidadeRoutes.js';
 import curriculoRoutes from './routes/curriculoRoutes.js';
 import contratoRoutes from './routes/contratoRoutes.js';
 import comunidadeRoutes from './routes/comunidadeRoutes.js';
 import entrevistaRoutes from './routes/entrevistaRoutes.js';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -17,10 +23,17 @@ const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 const MONGODB_URI =
   process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/obidos-connect';
 
-// Configuração de CORS
+// Configuração flexível de CORS (suporta múltiplos domínios separados por vírgula ou '*')
+const allowedOrigins = CLIENT_ORIGIN.split(',').map((origin) => origin.trim());
+
 app.use(
   cors({
-    origin: CLIENT_ORIGIN,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -29,20 +42,25 @@ app.use(
 
 app.use(express.json());
 
-// Rota de status da API
-app.get('/api', (req, res) => {
-  res.json({
+// Rota de status e health check da API
+app.get(['/api', '/api/health', '/health'], (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? 'conectado' : 'desconectado';
+  const isHealthy = mongoose.connection.readyState === 1;
+
+  res.status(isHealthy ? 200 : 503).json({
     name: 'Óbidos Connect API',
     version: '1.0.0',
     description: 'Plataforma de Conexão Profissional Regional - Óbidos, Pará',
-    status: 'online',
-    database:
-      mongoose.connection.readyState === 1 ? 'conectado' : 'desconectado',
+    status: isHealthy ? 'online' : 'degraded',
+    database: dbStatus,
+    uptime: process.uptime(),
     timestamp: new Date().toISOString(),
   });
 });
 
 // Rotas REST
+app.use('/api/auth', authRoutes);
+app.use('/api/candidaturas', candidaturaRoutes);
 app.use('/api/oportunidades', oportunidadeRoutes);
 app.use('/api/curriculos', curriculoRoutes);
 app.use('/api/contratos', contratoRoutes);

@@ -1,4 +1,5 @@
 import PostComunidade from '../models/PostComunidade.js';
+import { escapeRegex } from '../utils/sanitize.js';
 
 export const getAll = async (req, res) => {
   try {
@@ -14,10 +15,11 @@ export const getAll = async (req, res) => {
     }
 
     if (search) {
+      const sanitized = escapeRegex(search);
       filter.$or = [
-        { titulo: { $regex: search, $options: 'i' } },
-        { conteudo: { $regex: search, $options: 'i' } },
-        { categoria: { $regex: search, $options: 'i' } },
+        { titulo: { $regex: sanitized, $options: 'i' } },
+        { conteudo: { $regex: sanitized, $options: 'i' } },
+        { categoria: { $regex: sanitized, $options: 'i' } },
       ];
     }
 
@@ -42,7 +44,12 @@ export const getById = async (req, res) => {
 
 export const create = async (req, res) => {
   try {
-    const post = new PostComunidade(req.body);
+    const dados = { ...req.body };
+    if (req.user) {
+      dados.autor_nome = req.user.nome;
+      dados.autor_cargo = req.user.profissao || req.user.organizacao || 'Membro da Comunidade';
+    }
+    const post = new PostComunidade(dados);
     const saved = await post.save();
     res.status(201).json(saved);
   } catch (error) {

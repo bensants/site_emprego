@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
 import {
   LayoutDashboard,
   Briefcase,
@@ -14,13 +14,22 @@ import {
   Menu,
   X,
   MapPin,
+  LogOut,
+  LogIn,
+  UserPlus,
+  Building2,
+  ShieldCheck,
+  UserCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/context/AuthContext';
 
 const navItems = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
   { name: 'Oportunidades', path: '/oportunidades', icon: Briefcase },
+  { name: 'Candidaturas', path: '/candidaturas', icon: UserCheck },
   { name: 'Buscar', path: '/buscar', icon: Search },
   { name: 'Currículos', path: '/curriculos', icon: FileText },
   { name: 'Contratos', path: '/contratos', icon: FileSignature },
@@ -36,6 +45,7 @@ export default function Layout() {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -43,6 +53,18 @@ export default function Layout() {
       navigate(`/oportunidades?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
     }
+  };
+
+  const getInitials = (name) => {
+    if (!name) return 'OB';
+    const parts = name.trim().split(' ');
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   return (
@@ -64,19 +86,19 @@ export default function Layout() {
       >
         {/* Brand Header */}
         <div className="flex h-16 items-center justify-between px-5 border-b border-slate-100">
-          <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+          <Link to="/" className="flex items-center space-x-3 group">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
               <Briefcase className="h-5 w-5" />
             </div>
             <div>
               <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
-                Óbidos Connect
+                Óbidos Conect
               </span>
               <span className="flex items-center text-[10px] font-medium text-slate-500 tracking-wider">
                 <MapPin className="h-2.5 w-2.5 mr-0.5 text-blue-600" /> PARÁ · BRASIL
               </span>
             </div>
-          </div>
+          </Link>
 
           <button
             type="button"
@@ -89,8 +111,8 @@ export default function Layout() {
 
         {/* Navigation Items */}
         <nav className="flex-1 space-y-1.5 px-3 py-4 overflow-y-auto">
-          <div className="px-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-600">
-            Menu Principal
+          <div className="px-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            Navegação
           </div>
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -120,16 +142,56 @@ export default function Layout() {
           })}
         </nav>
 
-        {/* Sidebar Footer Badge */}
-        <div className="p-4 border-t border-slate-100">
-          <div className="rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/80 p-3.5 border border-blue-100/60">
-            <div className="flex items-center gap-2 text-blue-800 text-xs font-semibold">
-              <span>Conexão Regional</span>
+        {/* Sidebar Footer: Info do Usuário ou Card de Conexão */}
+        <div className="p-3 border-t border-slate-100">
+          {isAuthenticated && user ? (
+            <div className="rounded-xl bg-slate-50 p-3 border border-slate-200/60">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                    {getInitials(user.nome)}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-800 truncate">{user.nome}</p>
+                    <span className="text-[10px] text-blue-600 font-medium capitalize">
+                      {user.tipo === 'empresa' ? 'Empresa / Cooperativa' : user.tipo === 'admin' ? 'Administrador' : 'Candidato'}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  title="Sair da conta"
+                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-            <p className="mt-1 text-[11px] text-slate-600 leading-relaxed">
-              Oeste Paraense integrado: comércio, agropecuária e serviços digitais.
-            </p>
-          </div>
+          ) : (
+            <div className="rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 p-3 border border-blue-100/80">
+              <p className="text-xs font-semibold text-blue-900">Acesse sua Conta</p>
+              <p className="text-[11px] text-slate-600 mt-0.5 mb-2.5">
+                Publique vagas ou candidate-se a contratos regionais.
+              </p>
+              <div className="flex gap-2">
+                <Link
+                  to="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex-1 text-center py-1.5 px-2 text-xs font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm"
+                >
+                  Entrar
+                </Link>
+                <Link
+                  to="/registro"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex-1 text-center py-1.5 px-2 text-xs font-medium rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  Criar
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -201,19 +263,40 @@ export default function Layout() {
               )}
             </div>
 
-            {/* Profile Avatar Pill */}
-            <NavLink
-              to="/perfil"
-              className="flex items-center gap-2 pl-2 pr-3 py-1 rounded-full border border-slate-200 bg-white/80 hover:bg-slate-50 transition-colors"
-            >
-              <div className="h-7 w-7 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
-                OB
+            {/* User Auth Section */}
+            {isAuthenticated && user ? (
+              <NavLink
+                to="/perfil"
+                className="flex items-center gap-2 pl-2 pr-3 py-1 rounded-full border border-slate-200 bg-white/80 hover:bg-slate-50 transition-colors shadow-sm"
+              >
+                <div className="h-7 w-7 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+                  {getInitials(user.nome)}
+                </div>
+                <div className="hidden sm:block text-left">
+                  <span className="block text-xs font-semibold text-slate-800 leading-none truncate max-w-[120px]">
+                    {user.nome}
+                  </span>
+                  <span className="text-[10px] text-slate-500">
+                    {user.cidade || 'Óbidos'}, {user.estado || 'PA'}
+                  </span>
+                </div>
+              </NavLink>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/login"
+                  className="px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  Entrar
+                </Link>
+                <Link
+                  to="/registro"
+                  className="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-all"
+                >
+                  Cadastre-se
+                </Link>
               </div>
-              <div className="hidden sm:block text-left">
-                <span className="block text-xs font-semibold text-slate-800 leading-none">Profissional Óbidos</span>
-                <span className="text-[10px] text-slate-500">Óbidos, PA</span>
-              </div>
-            </NavLink>
+            )}
           </div>
         </header>
 
@@ -224,7 +307,7 @@ export default function Layout() {
 
         {/* Sticky/Fixed Footer */}
         <footer className="border-t border-slate-200/80 bg-white/80 py-4 px-6 text-center text-xs text-slate-500 backdrop-blur-sm">
-          <p>Óbidos Conect © 2025 · Em conformidade com a LGPD (Lei nº 13.709/2018)</p>
+          <p>Óbidos Conect © 2026 · Em conformidade com a LGPD (Lei nº 13.709/2018) · Baixo Amazonas, Pará</p>
         </footer>
       </div>
     </div>

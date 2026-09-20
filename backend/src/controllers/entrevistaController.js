@@ -1,4 +1,5 @@
 import SalaEntrevista from '../models/SalaEntrevista.js';
+import { escapeRegex } from '../utils/sanitize.js';
 
 export const getAll = async (req, res) => {
   try {
@@ -10,11 +11,12 @@ export const getAll = async (req, res) => {
     }
 
     if (search) {
+      const sanitized = escapeRegex(search);
       filter.$or = [
-        { titulo: { $regex: search, $options: 'i' } },
-        { candidato_nome: { $regex: search, $options: 'i' } },
-        { empresa_nome: { $regex: search, $options: 'i' } },
-        { observacoes: { $regex: search, $options: 'i' } },
+        { titulo: { $regex: sanitized, $options: 'i' } },
+        { candidato_nome: { $regex: sanitized, $options: 'i' } },
+        { empresa_nome: { $regex: sanitized, $options: 'i' } },
+        { observacoes: { $regex: sanitized, $options: 'i' } },
       ];
     }
 
@@ -39,7 +41,11 @@ export const getById = async (req, res) => {
 
 export const create = async (req, res) => {
   try {
-    const sala = new SalaEntrevista(req.body);
+    const dados = { ...req.body };
+    if (req.user && !dados.empresa_nome) {
+      dados.empresa_nome = req.user.organizacao || req.user.nome;
+    }
+    const sala = new SalaEntrevista(dados);
     const saved = await sala.save();
     res.status(201).json(saved);
   } catch (error) {

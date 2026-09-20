@@ -15,12 +15,15 @@ import {
   FileText,
   Search,
 } from 'lucide-react';
-import { oportunidadesApi, curriculosApi, contratosApi, comunidadeApi } from '@/api/api';
+import { oportunidadesApi, curriculosApi, contratosApi, comunidadeApi, candidaturasApi } from '@/api/api';
+import { useAuth } from '@/context/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 export default function Dashboard() {
+  const { user, isAuthenticated } = useAuth();
+
   // Queries do React Query
   const { data: oportunidades = [], isLoading: loadingOportunidades } = useQuery({
     queryKey: ['oportunidades'],
@@ -40,6 +43,12 @@ export default function Dashboard() {
   const { data: posts = [], isLoading: loadingPosts } = useQuery({
     queryKey: ['comunidade'],
     queryFn: () => comunidadeApi.getAll(),
+  });
+
+  const { data: candidaturas = [] } = useQuery({
+    queryKey: ['minhas-candidaturas'],
+    queryFn: () => candidaturasApi.getMinhas(),
+    enabled: isAuthenticated && user?.tipo === 'candidato',
   });
 
   // Estatísticas calculadas
@@ -103,23 +112,31 @@ export default function Dashboard() {
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 p-6 md:p-10 text-white shadow-xl shadow-blue-500/15">
         <div className="relative z-10 max-w-2xl space-y-3">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
-            👋 Bem-vindo de volta!
+            👋 {isAuthenticated && user ? `Olá, ${user.nome.split(' ')[0]}!` : 'Bem-vindo ao Óbidos Conect!'}
           </div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">
-            Bem-vindo ao Óbidos Conect
+            {isAuthenticated && user
+              ? user.tipo === 'empresa'
+                ? 'Painel Corporativo & Recrutamento'
+                : 'Conexões Profissionais no Baixo Amazonas'
+              : 'Oportunidades e Talentos em Óbidos'}
           </h1>
           <p className="text-sm md:text-base text-blue-100/95 leading-relaxed">
-            Conectando empresas, trabalhadores autônomos, cooperativas e prestadores de serviços de Óbidos e municípios vizinhos com transparência, agilidade e segurança.
+            {isAuthenticated && user
+              ? user.tipo === 'empresa'
+                ? 'Publique demandas de contratação, avalie inscritos e formalize acordos de trabalho com profissionais locais.'
+                : `Você tem ${candidaturas.length} candidatura(s) ativas no momento. Explore novas demandas e conecte-se com contratantes regionais.`
+              : 'Conectando empresas, cooperativas agroextrativistas, profissionais autônomos e prestadores de serviços de Óbidos e região.'}
           </p>
           <div className="pt-2 flex flex-wrap gap-3">
             <Link to="/oportunidades">
               <Button variant="outline" className="border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white">
-                Explorar Oportunidades
+                {user?.tipo === 'empresa' ? 'Minhas Vagas' : 'Explorar Oportunidades'}
               </Button>
             </Link>
-            <Link to="/curriculos">
+            <Link to={isAuthenticated ? '/perfil' : '/login'}>
               <Button variant="outline" className="border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white">
-                Cadastrar Perfil
+                {isAuthenticated ? 'Meu Perfil' : 'Acessar Conta'}
               </Button>
             </Link>
           </div>
