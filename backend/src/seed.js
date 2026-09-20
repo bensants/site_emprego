@@ -362,6 +362,7 @@ const seedData = async () => {
         status: 'ativo',
         autor_nome: 'Gabriel Souza Marinho',
         autor_cargo: 'Designer e Freelancer',
+        
       },
     ]);
 

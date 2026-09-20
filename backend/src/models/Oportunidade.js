@@ -66,3 +66,4 @@ const OportunidadeSchema = new mongoose.Schema(
 );
 
 export default mongoose.model('obidos-connect', OportunidadeSchema);
+
