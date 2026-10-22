@@ -46,8 +46,7 @@ export default function Layout() {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth(); /*<---- */
-  const isLoginPage = location.pathname === '/login';
+  const { user, isAuthenticated, logout } = useAuth();
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -303,21 +302,7 @@ export default function Layout() {
         </header>
 
         {/* Page Body */}
-        <main
-          className={cn(
-            'flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto',
-            isLoginPage && 'bg-cover bg-center rounded-2xl'
-          )}
-          style={isLoginPage ? { backgroundImage: "url('/img/login-bg.jpg')" } : undefined}
-        >
-          {isLoginPage && (
-            <div className="mb-6 text-center">
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Bem-vindo ao Óbidos Conect</h1>
-              <p className="text-sm sm:text-base text-slate-600 mt-1">
-                Plataforma de Conexão Profissional Regional - Óbidos, Pará
-              </p>
-            </div>
-          )}
+        <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto">
           <Outlet />
         </main>
 
