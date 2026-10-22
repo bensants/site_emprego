@@ -75,6 +75,13 @@ export default function Dashboard() {
       gradient: 'from-sky-500 to-blue-600',
     },
     {
+      title: 'Mapa Regional',
+      desc: 'Localize usuários e cooperativas no mapa',
+      icon: MapPin,
+      link: '/mapa',
+      gradient: 'from-teal-500 to-cyan-600',
+    },
+    {
       title: 'Cadastrar Currículo',
       desc: 'Divulgue suas habilidades profissionais',
       icon: FileText,

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import {
   Search,
   Users,
@@ -38,13 +39,22 @@ export default function BuscarProfissionais() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-          Buscar Talentos da Região
-        </h1>
-        <p className="text-sm text-slate-500">
-          Encontre profissionais, técnicos e prestadores de serviços de Óbidos e do Baixo Amazonas com perfis públicos verificados.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            Buscar Talentos da Região
+          </h1>
+          <p className="text-sm text-slate-500">
+            Encontre profissionais, técnicos e prestadores de serviços de Óbidos e do Baixo Amazonas com perfis públicos verificados.
+          </p>
+        </div>
+
+        <Link
+          to="/mapa"
+          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-xs font-semibold shadow-xs transition-colors shrink-0"
+        >
+          <MapPin className="h-4 w-4 text-blue-600" /> Ver no Mapa Regional
+        </Link>
       </div>
 
       {/* Barra de Pesquisa */}

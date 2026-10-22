@@ -7,6 +7,7 @@ import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Oportunidades from './pages/Oportunidades';
 import BuscarProfissionais from './pages/BuscarProfissionais';
+import Mapa from './pages/Mapa';
 import Curriculos from './pages/Curriculos';
 import Contratos from './pages/Contratos';
 import Comunidade from './pages/Comunidade';
@@ -41,6 +42,7 @@ export default function App() {
               <Route path="oportunidades" element={<Oportunidades />} />
               <Route path="candidaturas" element={<MinhasCandidaturas />} />
               <Route path="buscar" element={<BuscarProfissionais />} />
+              <Route path="mapa" element={<Mapa />} />
               <Route path="curriculos" element={<Curriculos />} />
               <Route path="contratos" element={<Contratos />} />
               <Route path="comunidade" element={<Comunidade />} />

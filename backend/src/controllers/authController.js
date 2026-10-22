@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { escapeRegex } from '../utils/sanitize.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'obidos_connect_secret_key_2026_jwt_token_auth';
 const JWT_EXPIRES_IN = '7d';
@@ -10,7 +11,7 @@ const generateToken = (userId) => {
 
 export const register = async (req, res) => {
   try {
-    const { nome, email, senha, tipo, telefone, cidade, estado, profissao, organizacao, bio } = req.body;
+    const { nome, email, senha, tipo, telefone, endereco, bairro, cep, cidade, estado, profissao, organizacao, bio, coordenadas } = req.body;
 
     if (!nome || !email || !senha) {
       return res.status(400).json({ message: 'Nome, e-mail e senha são obrigatórios.' });
@@ -28,11 +29,15 @@ export const register = async (req, res) => {
       senha,
       tipo: tipo || 'candidato',
       telefone: telefone || '',
+      endereco: endereco || '',
+      bairro: bairro || '',
+      cep: cep || '',
       cidade: cidade || 'Óbidos',
       estado: estado || 'PA',
       profissao: profissao || '',
       organizacao: organizacao || '',
       bio: bio || '',
+      coordenadas: coordenadas || undefined,
     });
 
     await user.save();
@@ -97,7 +102,20 @@ export const getMe = async (req, res) => {
 
 export const updateMe = async (req, res) => {
   try {
-    const allowedFields = ['nome', 'telefone', 'cidade', 'estado', 'profissao', 'organizacao', 'bio', 'avatar'];
+    const allowedFields = [
+      'nome',
+      'telefone',
+      'endereco',
+      'bairro',
+      'cep',
+      'cidade',
+      'estado',
+      'profissao',
+      'organizacao',
+      'bio',
+      'avatar',
+      'coordenadas',
+    ];
     const updates = {};
 
     allowedFields.forEach((field) => {
@@ -118,5 +136,49 @@ export const updateMe = async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({ message: 'Erro ao atualizar perfil', error: error.message });
+  }
+};
+
+/**
+ * Lista usuários cadastrados com localização para o Mapa Regional
+ */
+export const getUsuariosMapa = async (req, res) => {
+  try {
+    const { search, tipo, bairro, cidade } = req.query;
+    const filter = { ativo: true };
+
+    if (tipo && tipo !== 'todos') {
+      filter.tipo = tipo;
+    }
+
+    if (bairro && bairro !== 'todos') {
+      filter.bairro = { $regex: escapeRegex(bairro), $options: 'i' };
+    }
+
+    if (cidade && cidade !== 'todas') {
+      filter.cidade = { $regex: escapeRegex(cidade), $options: 'i' };
+    }
+
+    if (search) {
+      const sanitized = escapeRegex(search);
+      filter.$or = [
+        { nome: { $regex: sanitized, $options: 'i' } },
+        { profissao: { $regex: sanitized, $options: 'i' } },
+        { organizacao: { $regex: sanitized, $options: 'i' } },
+        { endereco: { $regex: sanitized, $options: 'i' } },
+        { bairro: { $regex: sanitized, $options: 'i' } },
+        { cidade: { $regex: sanitized, $options: 'i' } },
+      ];
+    }
+
+    // Retorna os dados públicos dos usuários cadastrados para o mapa
+    const usuarios = await User.find(filter)
+      .select('-senha')
+      .sort({ createdAt: -1 });
+
+    res.json(usuarios);
+  } catch (error) {
+    console.error('Erro ao listar usuários no mapa:', error);
+    res.status(500).json({ message: 'Erro ao listar usuários para o mapa', error: error.message });
   }
 };

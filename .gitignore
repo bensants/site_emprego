@@ -35,3 +35,10 @@ coverage/
 # Temporary files
 tmp/
 temp/
+
+# Large binary installers & archives
+*.deb
+*.iso
+*.tar.gz
+*.zip
+

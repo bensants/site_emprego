@@ -1,5 +1,5 @@
 {
-  "name": "obidos-connect-workspace",
+  "name": "obidos-conect-workspace",
   "version": "1.0.0",
   "description": "Plataforma de Conexão Profissional Regional - Óbidos, Pará",
   "private": true,
@@ -20,6 +20,6 @@
     "docker",
     "fullstack"
   ],
-  "author": "Óbidos Connect Team",
+  "author": "Óbidos Conect Team",
   "license": "MIT"
 }

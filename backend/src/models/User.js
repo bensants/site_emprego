@@ -31,6 +31,21 @@ const UserSchema = new mongoose.Schema(
       default: '',
       trim: true,
     },
+    endereco: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    bairro: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    cep: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     cidade: {
       type: String,
       default: 'Óbidos',
@@ -40,6 +55,10 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: 'PA',
       trim: true,
+    },
+    coordenadas: {
+      lat: { type: Number },
+      lng: { type: Number },
     },
     profissao: {
       type: String,

@@ -18,6 +18,8 @@ export default function Registro() {
     email: '',
     senha: '',
     telefone: '',
+    endereco: '',
+    bairro: '',
     cidade: 'Óbidos',
     estado: 'PA',
     profissao: '',
@@ -215,6 +217,34 @@ export default function Registro() {
                     className="w-16 text-center uppercase"
                   />
                 </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  Endereço (Rua, Número)
+                </label>
+                <Input
+                  type="text"
+                  name="endereco"
+                  placeholder="Ex: Rua Dr. Picanço Diniz, 142"
+                  value={formData.endereco}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  Bairro
+                </label>
+                <Input
+                  type="text"
+                  name="bairro"
+                  placeholder="Ex: Centro, São Francisco, Santa Terezinha"
+                  value={formData.bairro}
+                  onChange={handleChange}
+                />
               </div>
             </div>
 

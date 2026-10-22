@@ -42,6 +42,12 @@ export const authApi = {
   register: (data) => api.post('/auth/register', data).then((res) => res.data),
   getMe: () => api.get('/auth/me').then((res) => res.data),
   updateMe: (data) => api.put('/auth/me', data).then((res) => res.data),
+  getMapa: (params) => api.get('/auth/mapa', { params }).then((res) => res.data),
+};
+
+// Endpoints de Usuários e Geolocalização
+export const usuariosApi = {
+  getMapa: (params) => api.get('/auth/mapa', { params }).then((res) => res.data),
 };
 
 // Endpoints de Candidaturas

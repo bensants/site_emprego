@@ -30,6 +30,9 @@ export default function Perfil() {
     nome: 'Mayara Albuquerque Pauxis',
     email: 'mayara.pauxis@obidos.com.br',
     telefone: '(93) 98412-3456',
+    endereco: 'Rua Dr. Picanço Diniz, 142',
+    bairro: 'Centro',
+    cep: '68250-000',
     profissao: 'Engenheira de Software Full Stack',
     cidade: 'Óbidos',
     estado: 'PA',
@@ -47,6 +50,9 @@ export default function Perfil() {
         nome: user.nome || '',
         email: user.email || '',
         telefone: user.telefone || '',
+        endereco: user.endereco || '',
+        bairro: user.bairro || '',
+        cep: user.cep || '',
         profissao: user.profissao || '',
         cidade: user.cidade || 'Óbidos',
         estado: user.estado || 'PA',
@@ -155,7 +161,7 @@ export default function Perfil() {
             </p>
             <p className="text-xs text-slate-500 mt-2 flex items-center justify-center gap-1">
               <MapPin className="h-3.5 w-3.5 text-blue-600" />
-              {profile.cidade}, {profile.estado}
+              {profile.endereco ? `${profile.endereco}, ` : ''}{profile.bairro ? `${profile.bairro}, ` : ''}{profile.cidade} - {profile.estado}
             </p>
 
             <div className="mt-4 pt-4 border-t border-slate-100 text-left space-y-2 text-xs text-slate-600">
@@ -293,6 +299,33 @@ export default function Perfil() {
                       value={profile.estado}
                       onChange={handleChange}
                       placeholder="PA"
+                    />
+                  </div>
+                </div>
+
+                {/* Endereço, Bairro e CEP para localização no Mapa */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Endereço (Rua, Número)
+                    </label>
+                    <Input
+                      name="endereco"
+                      value={profile.endereco || ''}
+                      onChange={handleChange}
+                      placeholder="Ex: Rua Dr. Picanço Diniz, 142"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Bairro
+                    </label>
+                    <Input
+                      name="bairro"
+                      value={profile.bairro || ''}
+                      onChange={handleChange}
+                      placeholder="Ex: Centro, São Francisco"
                     />
                   </div>
                 </div>

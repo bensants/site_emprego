@@ -1,6 +1,6 @@
 # 🚀 Guia Oficial de Publicação e Deploy em Produção — Óbidos Conect
 
-Este documento é o guia definitivo para publicar a plataforma **Óbidos Conect** em ambiente de produção com alta disponibilidade, segurança, performance e custo otimizado (incluindo opções 100% gratuitas para início de operação).
+Este documento é o guia para publicar a plataforma **Óbidos Conect** em ambiente de produção com alta disponibilidade, segurança, performance e custo otimizado (incluindo opções 100% gratuitas para início de operação).
 
 ---
 
@@ -62,7 +62,7 @@ Ideal para início imediato sem custo de infraestrutura fixa.
 3. Conecte seu repositório GitHub do `site_emprego`.
 4. Defina as configurações:
    - **Name**: `obidos-connect-api`
-   - **Region**: `Ohio (US East)` ou `Frankfurt`
+   - **Region**: `Óbidos-PA`
    - **Root Directory**: `backend`
    - **Environment**: `Node`
    - **Build Command**: `npm ci --omit=dev`
@@ -77,7 +77,7 @@ Ideal para início imediato sem custo de infraestrutura fixa.
    | `JWT_SECRET` | `chave_aleatoria_longa_com_mais_de_32_caracteres_obidos_2026` |
    | `CLIENT_ORIGIN` | `https://obidos-conect.vercel.app` *(ou `*` durante os primeiros testes)* |
 6. Em **Health Check Path**, configure: `/api/health`.
-7. Clique em **Create Web Service**. Guarde a URL pública gerada (ex: `https://obidos-connect-api.onrender.com`).
+7. Clique em **Create Web Service**. Guarde a URL pública gerada (ex: `https://site-emprego-1cfd.onrender.com`).
 
 ---
 
