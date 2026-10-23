@@ -173,11 +173,11 @@ export default function Login() {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => handlePreencherDemo('mayara.pauxis@obidos.com.br')}
+                  onClick={() => handlePreencherDemo('maria.pauxis@obidos.com.br')}
                   className="text-left p-2 rounded-lg border border-slate-200/80 bg-slate-50/70 hover:border-blue-400 hover:bg-blue-50/50 transition-colors text-xs"
                 >
-                  <div className="font-semibold text-slate-800 text-[11px]">Candidata / Mayara</div>
-                  <div className="text-slate-500 text-[10px] truncate">mayara.pauxis@...</div>
+                  <div className="font-semibold text-slate-800 text-[11px]">Candidata / Maria</div>
+                  <div className="text-slate-500 text-[10px] truncate">maria.pauxis@...</div>
                 </button>
                 <button
                   type="button"
