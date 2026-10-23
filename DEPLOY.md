@@ -222,6 +222,6 @@ Ao rodar `npm run seed`, as seguintes contas estarão prontas para uso:
 
 | Perfil | E-mail | Senha |
 |---|---|---|
-| 💼 **Candidata** | `mayara.pauxis@obidos.com.br` | `obidos123` |
+| 💼 **Candidata** | `maria.pauxis@obidos.com.br` | `obidos123` |
 | 🏢 **Empresa** | `coopao@obidos.com.br` | `obidos123` |
 | 🛡️ **Administrador** | `admin@obidos.com.br` | `obidos123` |

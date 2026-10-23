@@ -49,7 +49,7 @@ const seedData = async () => {
         profissao: 'Engenheira Florestal',
         organizacao: 'Cooperativa Agroextrativista de Óbidos (COOPAO)',
         bio: 'Apaixonada por soluções tecnológicas para cooperativas e negócios do Baixo Amazonas.',
-        coordenadas: { lat: -1.9183, lng: -55.5186 },
+        coordenadas: { lat: -1.9212, lng: -55.5186 },
       },
       {
         nome: 'Cooperativa Agroextrativista de Óbidos (COOPAO)',
