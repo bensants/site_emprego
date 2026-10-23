@@ -25,9 +25,9 @@ export function Dialog({ open, onOpenChange, children }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop com blur suave */}
+      {/* Backdrop com blur escuro atmosférico */}
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-200 animate-in fade-in"
+        className="fixed inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity duration-200 animate-in fade-in"
         onClick={() => onOpenChange(false)}
       />
       {/* Modal Dialog Content Container */}
@@ -41,8 +41,9 @@ export function Dialog({ open, onOpenChange, children }) {
 export function DialogContent({ className, children, onClose, ...props }) {
   return (
     <div
+      data-card="true"
       className={cn(
-        'relative mx-auto w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl border border-slate-100 transition-all duration-300',
+        'relative mx-auto w-full max-w-xl rounded-2xl bg-white/95 backdrop-blur-2xl p-6 shadow-2xl border border-white/40 transition-all duration-300 text-slate-900',
         className
       )}
       onClick={(e) => e.stopPropagation()}

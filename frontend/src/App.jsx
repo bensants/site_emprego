@@ -37,10 +37,7 @@ export default function App() {
         <Toaster position="top-right" richColors closeButton />
         <BrowserRouter>
           <Routes>
-            {/* Tela de Login em Tela Cheia Imersiva */}
-            <Route path="/login" element={<Login />} />
-
-            {/* Rotas com Layout Geral (Sidebar, Header e Footer) */}
+            {/* Todas as rotas centralizadas no Layout Geral com o background unificado da SPA */}
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
               <Route path="oportunidades" element={<Oportunidades />} />
@@ -53,6 +50,7 @@ export default function App() {
               <Route path="entrevistas" element={<Entrevistas />} />
               <Route path="regulamentacoes" element={<Regulamentacoes />} />
               <Route path="perfil" element={<Perfil />} />
+              <Route path="login" element={<Login />} />
               <Route path="registro" element={<Registro />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>

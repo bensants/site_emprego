@@ -69,12 +69,14 @@ export default function Registro() {
   };
 
   return (
-    <div className="max-w-xl mx-auto py-6 animate-in fade-in duration-300">
-      <Card className="border-border/60 shadow-lg">
+    <div className="max-w-xl mx-auto py-6 sm:py-10 animate-in fade-in duration-300">
+      <Card className="bg-white/95 backdrop-blur-xl border border-white/40 shadow-2xl shadow-black/40 rounded-2xl overflow-hidden">
         <CardHeader className="space-y-1 text-center">
-          <div className="mx-auto w-12 h-12 rounded-2xl bg-indigo-600/10 text-indigo-600 flex items-center justify-center mb-2">
-            <UserPlus className="w-6 h-6" />
-          </div>
+          <img
+            src="/img/icone.jpg"
+            alt="Óbidos Conect"
+            className="mx-auto w-16 h-16 rounded-2xl object-cover shadow-lg shadow-blue-500/30 ring-2 ring-white/40 mb-2"
+          />
           <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
             Criar Conta no Óbidos Conect
           </CardTitle>
@@ -276,9 +278,9 @@ export default function Registro() {
           </form>
         </CardContent>
 
-        <CardFooter className="flex justify-center border-t border-slate-100 pt-4 text-sm text-slate-600">
+        <CardFooter className="flex justify-center border-t border-slate-100 bg-slate-50/50 py-3.5 text-xs text-slate-600">
           Já possui cadastro?{' '}
-          <Link to="/login" className="text-blue-600 font-semibold hover:underline ml-1">
+          <Link to="/login" className="text-blue-600 font-bold hover:underline ml-1">
             Fazer login
           </Link>
         </CardFooter>

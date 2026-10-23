@@ -4,9 +4,10 @@ import { cn } from '@/lib/utils';
 export function Card({ className, children, hover = true, ...props }) {
   return (
     <div
+      data-card="true"
       className={cn(
-        'rounded-xl border border-slate-200/80 bg-white text-slate-900 shadow-sm transition-all duration-300',
-        hover && 'hover:shadow-md hover:border-slate-300/80',
+        'rounded-2xl border border-white/40 bg-white/95 backdrop-blur-xl text-slate-900 shadow-xl shadow-black/20 transition-all duration-300',
+        hover && 'hover:shadow-2xl hover:border-white/60 hover:-translate-y-0.5',
         className
       )}
       {...props}

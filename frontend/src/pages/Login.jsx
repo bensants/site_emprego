@@ -13,7 +13,6 @@ import {
   ShieldCheck,
   Briefcase,
   MapPin,
-  ArrowLeft,
 } from 'lucide-react';
 
 export default function Login() {
@@ -59,49 +58,17 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 overflow-x-hidden">
-      {/* Imagem de Fundo em Tela Cheia (/img/login-bg.jpg) */}
-      <div
-        className="
-        absolute inset-0 
-        bg-cover bg-center 
-        bg-no-repeat 
-        transition-all 
-        duration-700 
-        scale-100
-        hover:scale-105
-        "
-        style={{ backgroundImage: "url('/img/login-bg.jpg')" }}
-      />
-
-      {/* Overlay com Gradiente Escuro e Efeito de Desfoque Atmosférico */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-slate-950/85 via-slate-900/70 to-blue-950/60 backdrop-blur-[2px]" />
-
-      {/* Botão de Retorno ao Início no Topo Esquerdo */}
-      <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border border-white/20 text-xs font-semibold shadow-lg transition-all hover:scale-105"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Voltar ao Início</span>
-        </Link>
-      </div>
-
-      {/* Selo Regional no Topo Direito */}
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20 hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 text-white/90 backdrop-blur-md border border-white/20 text-xs font-medium shadow-lg">
-        <MapPin className="w-3.5 h-3.5 text-blue-400" />
-        <span>Óbidos · Pará</span>
-      </div>
-
+    <div className="flex items-center justify-center py-6 sm:py-12 w-full animate-in fade-in zoom-in-95 duration-300">
       {/* Card Centralizado em Glassmorphism */}
-      <div className="relative z-10 w-full max-w-md my-8 animate-in fade-in zoom-in-95 duration-300">
+      <div className="w-full max-w-md my-4">
         <Card className="bg-white/95 backdrop-blur-xl border border-white/40 shadow-2xl shadow-black/40 rounded-2xl overflow-hidden">
           <CardHeader className="space-y-2 text-center pb-4 pt-6">
             {/* Ícone de Marca */}
-            <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/30">
-              <Briefcase className="w-6 h-6" />
-            </div>
+            <img
+              src="/img/icone.jpg"
+              alt="Óbidos Conect"
+              className="mx-auto w-16 h-16 rounded-2xl object-cover shadow-lg shadow-blue-500/30 ring-2 ring-white/40"
+            />
 
             <div>
               <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
