@@ -13,7 +13,7 @@
 - **TanStack React Query v5** (`useQuery` para leitura, `useMutation` + `invalidateQueries` para escrita)
 - **Sonner** (sistema moderno de notificações toast reativas)
 - **Axios** (instância com interceptor automático de token JWT `Bearer`)
-- **Lucide React** (iconografia moderna)
+- **Lucide React** (iconografia)
 
 ### Backend (`/backend`)
 - **Node.js 20** em modo ESM (`"type": "module"`) (porta 5000)
@@ -143,7 +143,7 @@ Acesse: [http://localhost:5173](http://localhost:5173)
 
 | Papel | E-mail | Senha |
 |---|---|---|
-| 💼 **Candidata** | `mayara.pauxis@obidos.com.br` | `obidos123` |
+| 💼 **Candidata** | `maria.pauxis@obidos.com.br` | `obidos123` |
 | 🏢 **Empresa** | `coopao@obidos.com.br` | `obidos123` |
 | 🛡️ **Administrador** | `admin@obidos.com.br` | `obidos123` |
 

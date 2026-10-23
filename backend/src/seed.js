@@ -36,8 +36,8 @@ const seedData = async () => {
     console.log('Inserindo usuários padrão com endereços regionais...');
     const users = await User.create([
       {
-        nome: 'Mayara Albuquerque Pauxis',
-        email: 'mayara.pauxis@obidos.com.br',
+        nome: 'Maria Pauxis',
+        email: 'maria.pauxis@obidos.com.br',
         senha: 'obidos123',
         tipo: 'candidato',
         telefone: '(93) 98412-3456',
