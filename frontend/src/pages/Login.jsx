@@ -91,7 +91,7 @@ export default function Login() {
       {/* Selo Regional no Topo Direito */}
       <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20 hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 text-white/90 backdrop-blur-md border border-white/20 text-xs font-medium shadow-lg">
         <MapPin className="w-3.5 h-3.5 text-blue-400" />
-        <span>Óbidos · Baixo Amazonas</span>
+        <span>Óbidos · Pará</span>
       </div>
 
       {/* Card Centralizado em Glassmorphism */}
