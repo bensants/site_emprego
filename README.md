@@ -102,6 +102,30 @@ Suba toda a infraestrutura (Backend, Frontend Nginx e MongoDB) com um único com
 ```bash
 # 1. Copiar variáveis de ambiente do Docker
 cp .env.docker.example .env
+# ==============================================================================
+# Variáveis de Ambiente para Docker Compose - Óbidos Conect
+# Copie este arquivo para .env na raiz antes de executar: docker compose up -d
+# ==============================================================================
+
+# Portas dos Serviços
+FRONTEND_PORT=80
+BACKEND_PORT=5000
+
+# Backend: String de Conexão com o MongoDB
+# Para usar o MongoDB do container Docker:
+MONGODB_URI=mongodb://mongo:27017/obidos-connect
+
+# Para usar o MongoDB Atlas na nuvem:
+# MONGODB_URI=mongodb+srv://<usuario>:<senha>@<cluster>.mongodb.net/obidos-connect?retryWrites=true&w=majority
+
+# Backend: Chave secreta de assinatura dos tokens JWT (gere uma chave forte para produção)
+JWT_SECRET=gere_uma_chave_secreta_aleatoria_com_openssl_rand_hex_32
+
+# Backend: Origens permitidas no CORS (separadas por vírgula)
+CLIENT_ORIGIN=http://localhost,http://localhost:80,http://localhost:5173
+
+# Frontend: URL base da API (no Docker Compose com Nginx, use /api para proxy reverso automático)
+VITE_API_URL=/api
 
 # 2. Subir todos os containers
 docker compose up -d --build
