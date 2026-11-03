@@ -1,3 +1,4 @@
+// backend/src/models/User.js
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
@@ -14,7 +15,6 @@ const UserSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, 'Por favor, informe um e-mail válido'],
     },
     senha: {
       type: String,
@@ -23,8 +23,8 @@ const UserSchema = new mongoose.Schema(
     },
     tipo: {
       type: String,
-      enum: ['candidato', 'empresa', 'admin'],
-      default: 'candidato',
+      enum: ['candidato', 'empresa', 'prestador', 'admin'],
+      default: 'prestador',
     },
     telefone: {
       type: String,
@@ -46,21 +46,28 @@ const UserSchema = new mongoose.Schema(
       default: '',
       trim: true,
     },
-    organizacao: {
-      type: String,
-      default: '',
-      trim: true,
-    },
     bio: {
       type: String,
       default: '',
       trim: true,
     },
-    avatar: {
-      type: String,
-      default: '',
-      trim: true,
-    },
+
+    // ==========================================
+    // CAMPOS DE VITRINE MEI / AUTÔNOMO
+    // ==========================================
+    nomeComercial: { type: String, default: '', trim: true },
+    bairro: { type: String, default: 'Centro', trim: true },
+    categoria: { type: String, default: 'Obras, Reformas e Manutenção Residencial', trim: true },
+    visivelNoCatalogo: { type: Boolean, default: true },
+    mediaAvaliacoes: { type: Number, default: 5.0 },
+
+    // ==========================================
+    // DADOS SENSÍVEIS (LGPD - PROTEGIDOS)
+    // ==========================================
+    cpfParticular: { type: String, default: '', select: false },
+    enderecoParticular: { type: String, default: '', select: false },
+    registroMEI: { type: String, default: '', select: false },
+
     ativo: {
       type: Boolean,
       default: true,
@@ -88,10 +95,13 @@ UserSchema.methods.compararSenha = async function (senhaInformada) {
   return bcrypt.compare(senhaInformada, this.senha);
 };
 
-// Remover campo senha na serialização JSON
+// Remove campos sensíveis na serialização JSON
 UserSchema.methods.toJSON = function () {
   const userObject = this.toObject();
   delete userObject.senha;
+  delete userObject.cpfParticular;
+  delete userObject.enderecoParticular;
+  delete userObject.registroMEI;
   return userObject;
 };
 

@@ -1,31 +1,22 @@
+// backend/src/server.js
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 import authRoutes from './routes/authRoutes.js';
-import candidaturaRoutes from './routes/candidaturaRoutes.js';
 import oportunidadeRoutes from './routes/oportunidadeRoutes.js';
-import curriculoRoutes from './routes/curriculoRoutes.js';
-import contratoRoutes from './routes/contratoRoutes.js';
-import comunidadeRoutes from './routes/comunidadeRoutes.js';
-import entrevistaRoutes from './routes/entrevistaRoutes.js';
+import User from './models/User.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
-const MONGODB_URI =
-  process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/obidos-connect';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://mongo:27017/obidos-connect';
 
-// Configuração flexível de CORS (suporta múltiplos domínios separados por vírgula ou '*')
+// Configuração de CORS
 const allowedOrigins = CLIENT_ORIGIN.split(',').map((origin) => origin.trim());
-
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -34,73 +25,87 @@ app.use(
       }
       return callback(null, true);
     },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   })
 );
 
 app.use(express.json());
 
-// Rota de status e health check da API
-app.get(['/api', '/api/health', '/health'], (req, res) => {
-  const dbStatus = mongoose.connection.readyState === 1 ? 'conectado' : 'desconectado';
-  const isHealthy = mongoose.connection.readyState === 1;
-
-  res.status(isHealthy ? 200 : 503).json({
-    name: 'Óbidos Connect API',
-    version: '1.0.0',
-    description: 'Plataforma de Conexão Profissional Regional - Óbidos, Pará',
-    status: isHealthy ? 'online' : 'degraded',
-    database: dbStatus,
-    uptime: process.uptime(),
+// ==========================================
+// HEALTHCHECK NATIVO (DOCKER / KUBERNETES)
+// ==========================================
+app.get(['/api/health', '/health'], (req, res) => {
+  const isDbConnected = mongoose.connection.readyState === 1;
+  res.status(200).json({
+    status: 'ok',
     timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    database: isDbConnected ? 'conectado' : 'conectando'
   });
 });
 
-// Rotas REST
+// ==========================================
+// ROTAS DA APLICAÇÃO
+// ==========================================
 app.use('/api/auth', authRoutes);
-app.use('/api/candidaturas', candidaturaRoutes);
 app.use('/api/oportunidades', oportunidadeRoutes);
-app.use('/api/curriculos', curriculoRoutes);
-app.use('/api/contratos', contratoRoutes);
-app.use('/api/comunidade', comunidadeRoutes);
-app.use('/api/entrevistas', entrevistaRoutes);
 
-// Tratamento de rotas inexistentes
-app.use((req, res) => {
-  res.status(404).json({ message: `Rota ${req.method} ${req.url} não encontrada` });
-});
-
-// Middleware global de tratamento de erros
-app.use((err, req, res, next) => {
-  console.error('Erro na requisição:', err);
-  res.status(500).json({
-    message: 'Erro interno do servidor',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined,
-  });
-});
-
-// Conexão com o MongoDB Atlas / Local
-const connectDatabase = async () => {
+// Rota de Vitrine Pública de Prestadores (MEIs de Óbidos)
+app.get('/api/prestadores', async (req, res) => {
   try {
-    console.log('Conectando ao MongoDB...');
-    await mongoose.connect(MONGODB_URI);
-    console.log('✅ Conexão com MongoDB estabelecida com sucesso!');
+    const { categoria, bairro, busca } = req.query;
+
+    const filtro = {
+      ativo: true,
+      visivelNoCatalogo: true,
+    };
+
+    if (bairro) {
+      filtro.bairro = new RegExp(bairro, 'i');
+    }
+
+    if (categoria && categoria !== 'todas' && categoria !== 'Todas') {
+      filtro.categoria = new RegExp(categoria, 'i');
+    }
+
+    if (busca) {
+      filtro.$or = [
+        { nome: new RegExp(busca, 'i') },
+        { nomeComercial: new RegExp(busca, 'i') },
+        { bio: new RegExp(busca, 'i') },
+        { profissao: new RegExp(busca, 'i') },
+      ];
+    }
+
+    // LGPD: Seleção segura sem dados civis sensíveis
+    const prestadores = await User.find(filtro)
+      .select('nome nomeComercial telefone cidade estado bairro categoria bio profissao mediaAvaliacoes')
+      .lean();
+
+    return res.status(200).json(prestadores);
   } catch (error) {
-    console.error('❌ Falha ao conectar ao MongoDB:', error.message);
-    console.warn(
-      '⚠️  Verifique se a string de conexão MONGODB_URI no arquivo backend/.env está correta.'
-    );
+    console.error('Erro ao listar prestadores:', error);
+    return res.status(500).json({ error: 'Erro interno ao consultar catálogo.' });
   }
-};
-
-connectDatabase();
-
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor Óbidos Connect rodando na porta ${PORT}`);
-  console.log(`🌐 API disponível em: http://localhost:${PORT}/api`);
-  console.log(`🔗 CORS habilitado para: ${CLIENT_ORIGIN}`);
 });
+
+// ==========================================
+// INICIALIZAÇÃO DO SERVIDOR E BANCO
+// ==========================================
+// 1. Inicia o servidor HTTP imediatamente para atender ao healthcheck do Docker
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Servidor Óbidos Connect rodando na porta ${PORT}`);
+  console.log(`🌐 Healthcheck ativo em: http://localhost:${PORT}/api/health`);
+});
+
+// 2. Conecta ao MongoDB de forma assíncrona
+mongoose
+  .connect(MONGODB_URI)
+  .then(() => {
+    console.log('✅ Conexão com MongoDB estabelecida com sucesso!');
+  })
+  .catch((err) => {
+    console.error('❌ Aviso: Falha ao conectar ao MongoDB:', err.message);
+  });
 
 export default app;

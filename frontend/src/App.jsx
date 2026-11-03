@@ -1,54 +1,70 @@
+// frontend/src/App.jsx
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './context/AuthContext';
-
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
-import Dashboard from './pages/Dashboard';
-import Oportunidades from './pages/Oportunidades';
+
+// Páginas homologadas conforme o TCC
 import BuscarProfissionais from './pages/BuscarProfissionais';
-import Curriculos from './pages/Curriculos';
-import Contratos from './pages/Contratos';
-import Comunidade from './pages/Comunidade';
-import Entrevistas from './pages/Entrevistas';
-import Regulamentacoes from './pages/Regulamentacoes';
-import Perfil from './pages/Perfil';
+import Oportunidades from './pages/Oportunidades';
 import Login from './pages/Login';
 import Registro from './pages/Registro';
-import MinhasCandidaturas from './pages/MinhasCandidaturas';
-
-import { Toaster } from 'sonner';
+import Perfil from './pages/Perfil';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 2, // 2 minutos
       refetchOnWindowFocus: false,
       retry: 1,
     },
   },
 });
 
+// Componente para rotas que exigem login prévio (Painel de edição / Visibilidade)
+function RotaProtegida({ children }) {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-4 border-slate-200 border-t-emerald-600" />
+      </div>
+    );
+  }
+
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Toaster position="top-right" richColors closeButton />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Layout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="oportunidades" element={<Oportunidades />} />
-              <Route path="candidaturas" element={<MinhasCandidaturas />} />
+              {/* Vitrine Pública de MEIs (RF-03) - Rota Padrão Aberta */}
+              <Route index element={<BuscarProfissionais />} />
               <Route path="buscar" element={<BuscarProfissionais />} />
-              <Route path="curriculos" element={<Curriculos />} />
-              <Route path="contratos" element={<Contratos />} />
-              <Route path="comunidade" element={<Comunidade />} />
-              <Route path="entrevistas" element={<Entrevistas />} />
-              <Route path="regulamentacoes" element={<Regulamentacoes />} />
-              <Route path="perfil" element={<Perfil />} />
+
+              {/* Mural de Demandas / Bicos Locais (RF-04) */}
+              <Route path="demandas" element={<Oportunidades />} />
+
+              {/* Autenticação (RF-01) */}
               <Route path="login" element={<Login />} />
               <Route path="registro" element={<Registro />} />
+
+              {/* Gestão de Perfil e Visibilidade LGPD (RF-02 e RF-05) */}
+              <Route
+                path="perfil"
+                element={
+                  <RotaProtegida>
+                    <Perfil />
+                  </RotaProtegida>
+                }
+              />
+
+              {/* Redirecionamento de rotas legadas ou inexistentes */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>

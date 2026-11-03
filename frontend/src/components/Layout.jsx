@@ -1,315 +1,199 @@
+// frontend/src/components/Layout.jsx
 import React, { useState } from 'react';
-import { NavLink, Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
-  LayoutDashboard,
-  Briefcase,
-  Search,
-  FileText,
-  FileSignature,
   Users,
-  Video,
-  Scale,
+  Briefcase,
   User,
-  Bell,
-  Menu,
-  X,
-  MapPin,
   LogOut,
   LogIn,
   UserPlus,
-  Building2,
+  Menu,
+  X,
   ShieldCheck,
-  UserCheck,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/context/AuthContext';
-
-const navItems = [
-  { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { name: 'Oportunidades', path: '/oportunidades', icon: Briefcase },
-  { name: 'Candidaturas', path: '/candidaturas', icon: UserCheck },
-  { name: 'Buscar', path: '/buscar', icon: Search },
-  { name: 'Currículos', path: '/curriculos', icon: FileText },
-  { name: 'Contratos', path: '/contratos', icon: FileSignature },
-  { name: 'Comunidade', path: '/comunidade', icon: Users },
-  { name: 'Entrevistas', path: '/entrevistas', icon: Video },
-  { name: 'Regulamentações', path: '/regulamentacoes', icon: Scale },
-  { name: 'Perfil', path: '/perfil', icon: User },
-];
+import { Button } from './ui/button';
 
 export default function Layout() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [notificationOpen, setNotificationOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/oportunidades?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery('');
-    }
-  };
-
-  const getInitials = (name) => {
-    if (!name) return 'OB';
-    const parts = name.trim().split(' ');
-    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  };
+  const [menuAberto, setMenuAberto] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/');
+    setMenuAberto(false);
   };
 
-  return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 text-slate-800">
-      {/* Mobile Drawer Overlay */}
-      {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm lg:hidden transition-opacity"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
+  const navLinks = [
+    { label: 'Vitrine de Profissionais', path: '/', icon: Users },
+    { label: 'Mural de Demandas', path: '/demandas', icon: Briefcase },
+  ];
 
-      {/* Sidebar Desktop (w-64 fixa, glassmorphism) */}
-      <aside
-        className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 border-r border-slate-200/80 bg-white/90 backdrop-blur-md shadow-sm transition-transform duration-300 lg:translate-x-0 flex flex-col',
-          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        )}
-      >
-        {/* Brand Header */}
-        <div className="flex h-16 items-center justify-between px-5 border-b border-slate-100">
-          <Link to="/" className="flex items-center space-x-3 group">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
-              <Briefcase className="h-5 w-5" />
-            </div>
-            <div>
-              <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
-                Óbidos Conect
-              </span>
-              <span className="flex items-center text-[10px] font-medium text-slate-500 tracking-wider">
-                <MapPin className="h-2.5 w-2.5 mr-0.5 text-blue-600" /> PARÁ · BRASIL
-              </span>
-            </div>
+  return (
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800">
+      {/* Barra de Navegação Superior */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+          {/* Logo Regional */}
+          <Link to="/" className="flex items-center gap-2 text-emerald-700 font-extrabold text-lg sm:text-xl tracking-tight">
+            <span className="bg-emerald-600 text-white p-1.5 rounded-lg">
+              <Users className="w-5 h-5" />
+            </span>
+            Óbidos Conect
           </Link>
 
-          <button
-            type="button"
-            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 lg:hidden"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+          {/* Links de Navegação Desktop */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              const ativo = location.pathname === link.path;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    ativo
+                      ? 'bg-emerald-50 text-emerald-700'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
 
-        {/* Navigation Items */}
-        <nav className="flex-1 space-y-1.5 px-3 py-4 overflow-y-auto">
-          <div className="px-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-            Navegação
-          </div>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                onClick={() => setMobileMenuOpen(false)}
-                className={cn(
-                  'group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200',
-                  isActive
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 font-semibold'
-                    : 'text-slate-600 hover:bg-slate-100/80 hover:text-blue-700'
-                )}
-              >
-                <Icon
-                  className={cn(
-                    'h-4.5 w-4.5 transition-transform duration-200 group-hover:scale-110',
-                    isActive ? 'text-white' : 'text-slate-500 group-hover:text-blue-600'
-                  )}
-                />
-                <span>{item.name}</span>
-              </NavLink>
-            );
-          })}
-        </nav>
-
-        {/* Sidebar Footer: Info do Usuário ou Card de Conexão */}
-        <div className="p-3 border-t border-slate-100">
-          {isAuthenticated && user ? (
-            <div className="rounded-xl bg-slate-50 p-3 border border-slate-200/60">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                    {getInitials(user.nome)}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-slate-800 truncate">{user.nome}</p>
-                    <span className="text-[10px] text-blue-600 font-medium capitalize">
-                      {user.tipo === 'empresa' ? 'Empresa / Cooperativa' : user.tipo === 'admin' ? 'Administrador' : 'Candidato'}
-                    </span>
-                  </div>
-                </div>
-                <button
-                  type="button"
+          {/* Ações de Usuário Desktop */}
+          <div className="hidden md:flex items-center gap-3">
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2">
+                <Link to="/perfil">
+                  <Button variant="outline" size="sm" className="gap-2 border-slate-200 text-slate-700">
+                    <User className="w-4 h-4 text-emerald-600" />
+                    <span>{user?.nome?.split(' ')[0] || 'Meu Painel'}</span>
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={handleLogout}
-                  title="Sair da conta"
-                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0"
+                  className="text-slate-500 hover:text-red-600 gap-1.5"
                 >
                   <LogOut className="w-4 h-4" />
-                </button>
+                  Sair
+                </Button>
               </div>
-            </div>
-          ) : (
-            <div className="rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 p-3 border border-blue-100/80">
-              <p className="text-xs font-semibold text-blue-900">Acesse sua Conta</p>
-              <p className="text-[11px] text-slate-600 mt-0.5 mb-2.5">
-                Publique vagas ou candidate-se a contratos regionais.
-              </p>
-              <div className="flex gap-2">
-                <Link
-                  to="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 text-center py-1.5 px-2 text-xs font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm"
-                >
-                  Entrar
-                </Link>
-                <Link
-                  to="/registro"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 text-center py-1.5 px-2 text-xs font-medium rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
-                >
-                  Criar
-                </Link>
-              </div>
-            </div>
-          )}
-        </div>
-      </aside>
-
-      {/* Main Container */}
-      <div className="flex-1 flex flex-col lg:pl-64">
-        {/* Sticky Header */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/85 px-4 md:px-8 backdrop-blur-md shadow-sm">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className="rounded-xl p-2 text-slate-600 hover:bg-slate-100 lg:hidden"
-              onClick={() => setMobileMenuOpen(true)}
-              aria-label="Abrir menu"
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-
-            {/* Quick Search */}
-            <form onSubmit={handleSearchSubmit} className="relative w-48 sm:w-72 md:w-96">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar vagas, talentos em Óbidos..."
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/80 py-1.5 pl-9 pr-3 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
-              />
-            </form>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Notification Bell */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setNotificationOpen(!notificationOpen)}
-                className="relative rounded-xl p-2 text-slate-600 hover:bg-slate-100 hover:text-blue-600 transition-colors"
-                aria-label="Notificações"
-              >
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
-                </span>
-              </button>
-
-              {/* Notification Popover */}
-              {notificationOpen && (
-                <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-slate-100 bg-white p-4 shadow-xl z-50 animate-in fade-in slide-in-from-top-2">
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                    <h4 className="text-sm font-semibold text-slate-900">Notificações Regionais</h4>
-                    <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">3 novas</span>
-                  </div>
-                  <div className="mt-3 space-y-2 text-xs text-slate-600">
-                    <div className="p-2 rounded-lg bg-blue-50/50 hover:bg-blue-50">
-                      <p className="font-semibold text-slate-800">Nova oportunidade cadastrada</p>
-                      <p className="text-[11px] text-slate-500">Desenvolvedor(a) Web na COOPAO em Óbidos.</p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-slate-50 hover:bg-slate-100/80">
-                      <p className="font-semibold text-slate-800">Contrato atualizado</p>
-                      <p className="text-[11px] text-slate-500">Progresso do contrato Pauxis avançou para 65%.</p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-slate-50 hover:bg-slate-100/80">
-                      <p className="font-semibold text-slate-800">Sala de Entrevista agendada</p>
-                      <p className="text-[11px] text-slate-500">Reunião para alinhamento de escopo às 15:00.</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* User Auth Section */}
-            {isAuthenticated && user ? (
-              <NavLink
-                to="/perfil"
-                className="flex items-center gap-2 pl-2 pr-3 py-1 rounded-full border border-slate-200 bg-white/80 hover:bg-slate-50 transition-colors shadow-sm"
-              >
-                <div className="h-7 w-7 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
-                  {getInitials(user.nome)}
-                </div>
-                <div className="hidden sm:block text-left">
-                  <span className="block text-xs font-semibold text-slate-800 leading-none truncate max-w-[120px]">
-                    {user.nome}
-                  </span>
-                  <span className="text-[10px] text-slate-500">
-                    {user.cidade || 'Óbidos'}, {user.estado || 'PA'}
-                  </span>
-                </div>
-              </NavLink>
             ) : (
               <div className="flex items-center gap-2">
-                <Link
-                  to="/login"
-                  className="px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition-colors"
-                >
-                  Entrar
+                <Link to="/login">
+                  <Button variant="ghost" size="sm" className="text-slate-700 gap-1.5">
+                    <LogIn className="w-4 h-4" />
+                    Entrar
+                  </Button>
                 </Link>
-                <Link
-                  to="/registro"
-                  className="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-all"
-                >
-                  Cadastre-se
+                <Link to="/registro">
+                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-sm">
+                    <UserPlus className="w-4 h-4" />
+                    Cadastrar MEI
+                  </Button>
                 </Link>
               </div>
             )}
           </div>
-        </header>
 
-        {/* Page Body */}
-        <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto">
-          <Outlet />
-        </main>
+          {/* Botão de Menu Mobile */}
+          <button
+            onClick={() => setMenuAberto(!menuAberto)}
+            className="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100"
+            aria-label="Abrir menu"
+          >
+            {menuAberto ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
 
-        {/* Sticky/Fixed Footer */}
-        <footer className="border-t border-slate-200/80 bg-white/80 py-4 px-6 text-center text-xs text-slate-500 backdrop-blur-sm">
-          <p>Óbidos Conect © 2026 · Em conformidade com a LGPD (Lei nº 13.709/2018) · Baixo Amazonas, Pará</p>
-        </footer>
-      </div>
+        {/* Menu Retrátil Mobile */}
+        {menuAberto && (
+          <div className="md:hidden border-b border-slate-200 bg-white px-4 py-4 space-y-3 shadow-lg animate-in slide-in-from-top duration-200">
+            <nav className="space-y-1">
+              {navLinks.map((link) => {
+                const Icon = link.icon;
+                const ativo = location.pathname === link.path;
+                return (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setMenuAberto(false)}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${
+                      ativo
+                        ? 'bg-emerald-50 text-emerald-700 font-semibold'
+                        : 'text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    to="/perfil"
+                    onClick={() => setMenuAberto(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    <User className="w-4 h-4 text-emerald-600" />
+                    Gerenciar Perfil / Visibilidade
+                  </Link>
+                  <Button
+                    variant="outline"
+                    onClick={handleLogout}
+                    className="w-full text-red-600 border-red-200 hover:bg-red-50 justify-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Desconectar
+                  </Button>
+                </>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <Link to="/login" onClick={() => setMenuAberto(false)}>
+                    <Button variant="outline" className="w-full">
+                      Entrar
+                    </Button>
+                  </Link>
+                  <Link to="/registro" onClick={() => setMenuAberto(false)}>
+                    <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700">
+                      Cadastrar
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* Conteúdo Principal Renderizado */}
+      <main className="flex-1 py-6">
+        <Outlet />
+      </main>
+
+      {/* Rodapé Alinhado à Conformidade da LGPD */}
+      <footer className="bg-white border-t border-slate-200 py-6 text-xs text-slate-500">
+        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <p>© 2026 Óbidos Conect – Instituto Federal do Pará (IFPA Campus Óbidos).</p>
+          <div className="flex items-center gap-2 text-slate-600">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>Privacidade garantida conforme Lei nº 13.709/2018 (LGPD)</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

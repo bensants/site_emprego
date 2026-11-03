@@ -95,28 +95,39 @@ export const getMe = async (req, res) => {
   }
 };
 
+// backend/src/controllers/authController.js - Função updateMe
 export const updateMe = async (req, res) => {
   try {
-    const allowedFields = ['nome', 'telefone', 'cidade', 'estado', 'profissao', 'organizacao', 'bio', 'avatar'];
-    const updates = {};
+    const camposPermitidos = [
+      'nome',
+      'telefone',
+      'bairro',
+      'profissao',
+      'nomeComercial',
+      'categoria',
+      'bio',
+      'visivelNoCatalogo', // Interruptor LGPD (RF-05)
+    ];
 
-    allowedFields.forEach((field) => {
-      if (req.body[field] !== undefined) {
-        updates[field] = req.body[field];
+    const atualizacoes = {};
+    for (const campo of camposPermitidos) {
+      if (req.body[campo] !== undefined) {
+        atualizacoes[campo] = req.body[campo];
       }
-    });
+    }
 
-    const updatedUser = await User.findByIdAndUpdate(
+    const usuarioAtualizado = await User.findByIdAndUpdate(
       req.user._id,
-      { $set: updates },
+      { $set: atualizacoes },
       { new: true, runValidators: true }
-    );
+    ).select('-senha -cpfParticular -enderecoParticular -registroMEI');
 
-    res.json({
-      message: 'Perfil atualizado com sucesso!',
-      user: updatedUser,
+    return res.status(200).json({
+      message: 'Perfil atualizado com sucesso.',
+      user: usuarioAtualizado,
     });
   } catch (error) {
-    res.status(400).json({ message: 'Erro ao atualizar perfil', error: error.message });
+    console.error('Erro ao atualizar perfil:', error);
+    return res.status(500).json({ message: 'Erro ao atualizar dados do perfil.', error: error.message });
   }
 };

@@ -9,7 +9,7 @@ WORKDIR /app
 
 # Copiar dependências
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 # Variável de build para a URL da API (padrão '/api' para proxy reverso do Nginx)
 ARG VITE_API_URL=/api

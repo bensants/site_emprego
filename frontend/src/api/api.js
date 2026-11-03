@@ -1,17 +1,21 @@
+// frontend/src/api/api.js
 import axios from 'axios';
 
+// URL base da API (Porta 8443 configurada no Docker/host)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8443/api';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
   timeout: 15000,
 });
 
-// Interceptor de requisição: injeta token de autenticação se disponível
+// Interceptor de requisição: injeta o Bearer token JWT em chamadas autenticadas
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('obidos_token');
+    const token = localStorage.getItem('obidos_token') || localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -20,23 +24,25 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Interceptor de resposta para logs ou tratamento de expiração
+// Interceptor de resposta: tratamento de expiração e erros
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error?.response?.status === 401 && localStorage.getItem('obidos_token')) {
-      // Token expirou ou é inválido
-      console.warn('Sessão expirada. Limpando token...');
+    if (error?.response?.status === 401 && (localStorage.getItem('obidos_token') || localStorage.getItem('token'))) {
+      console.warn('Sessão expirada. Limpando credenciais...');
       localStorage.removeItem('obidos_token');
       localStorage.removeItem('obidos_user');
-      // Não redireciona forçadamente para não quebrar leitura de páginas públicas
+      localStorage.removeItem('token');
     }
-    console.error('Erro na requisição Axios:', error?.response?.data || error.message);
     return Promise.reject(error);
   }
 );
 
-// Endpoints de Autenticação
+// ==============================================================================
+// SERVIÇOS DA API (EXPORTAÇÕES NOMEADAS ESPERADAS PELOS COMPONENTES REACT)
+// ==============================================================================
+
+// Autenticação e Perfis (AuthContext e Perfil)
 export const authApi = {
   login: (credentials) => api.post('/auth/login', credentials).then((res) => res.data),
   register: (data) => api.post('/auth/register', data).then((res) => res.data),
@@ -44,17 +50,13 @@ export const authApi = {
   updateMe: (data) => api.put('/auth/me', data).then((res) => res.data),
 };
 
-// Endpoints de Candidaturas
-export const candidaturasApi = {
-  apply: (data) => api.post('/candidaturas', data).then((res) => res.data),
-  getMinhas: () => api.get('/candidaturas/minhas').then((res) => res.data),
-  getByOportunidade: (oportunidadeId) => api.get(`/candidaturas/oportunidade/${oportunidadeId}`).then((res) => res.data),
-  updateStatus: (id, data) => api.patch(`/candidaturas/${id}/status`, typeof data === 'string' ? { status: data } : data).then((res) => res.data),
-  agendarEntrevista: (id, data) => api.post(`/candidaturas/${id}/agendar-entrevista`, data).then((res) => res.data),
-  cancelar: (id) => api.delete(`/candidaturas/${id}`).then((res) => res.data),
+// Prestadores de Serviços (Catálogo de MEIs / Autônomos em Óbidos)
+export const prestadoresApi = {
+  getAll: (params) => api.get('/prestadores', { params }).then((res) => res.data),
+  getById: (id) => api.get(`/prestadores/${id}`).then((res) => res.data),
 };
 
-// Endpoints de Oportunidades
+// Oportunidades e Demandas Locais
 export const oportunidadesApi = {
   getAll: (params) => api.get('/oportunidades', { params }).then((res) => res.data),
   getById: (id) => api.get(`/oportunidades/${id}`).then((res) => res.data),
@@ -63,16 +65,24 @@ export const oportunidadesApi = {
   delete: (id) => api.delete(`/oportunidades/${id}`).then((res) => res.data),
 };
 
-// Endpoints de Currículos
+// Módulos legados mantidos para garantir a compilação do front
 export const curriculosApi = {
-  getAll: (params) => api.get('/curriculos', { params }).then((res) => res.data),
-  getById: (id) => api.get(`/curriculos/${id}`).then((res) => res.data),
+  getAll: (params) => api.get('/prestadores', { params }).then((res) => res.data),
+  getById: (id) => api.get(`/prestadores/${id}`).then((res) => res.data),
   create: (data) => api.post('/curriculos', data).then((res) => res.data),
   update: (id, data) => api.put(`/curriculos/${id}`, data).then((res) => res.data),
   delete: (id) => api.delete(`/curriculos/${id}`).then((res) => res.data),
 };
 
-// Endpoints de Contratos
+export const candidaturasApi = {
+  apply: (data) => api.post('/candidaturas', data).then((res) => res.data),
+  getMinhas: () => api.get('/candidaturas/minhas').then((res) => res.data),
+  getByOportunidade: (id) => api.get(`/candidaturas/oportunidade/${id}`).then((res) => res.data),
+  updateStatus: (id, data) => api.patch(`/candidaturas/${id}/status`, data).then((res) => res.data),
+  agendarEntrevista: (id, data) => api.post(`/candidaturas/${id}/agendar-entrevista`, data).then((res) => res.data),
+  cancelar: (id) => api.delete(`/candidaturas/${id}`).then((res) => res.data),
+};
+
 export const contratosApi = {
   getAll: (params) => api.get('/contratos', { params }).then((res) => res.data),
   getById: (id) => api.get(`/contratos/${id}`).then((res) => res.data),
@@ -81,7 +91,6 @@ export const contratosApi = {
   delete: (id) => api.delete(`/contratos/${id}`).then((res) => res.data),
 };
 
-// Endpoints de Comunidade
 export const comunidadeApi = {
   getAll: (params) => api.get('/comunidade', { params }).then((res) => res.data),
   getById: (id) => api.get(`/comunidade/${id}`).then((res) => res.data),
@@ -91,7 +100,6 @@ export const comunidadeApi = {
   curtir: (id) => api.post(`/comunidade/${id}/curtir`).then((res) => res.data),
 };
 
-// Endpoints de Entrevistas
 export const entrevistasApi = {
   getAll: (params) => api.get('/entrevistas', { params }).then((res) => res.data),
   getById: (id) => api.get(`/entrevistas/${id}`).then((res) => res.data),
