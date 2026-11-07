@@ -100,85 +100,39 @@ export const getMe = async (req, res) => {
   }
 };
 
+// backend/src/controllers/authController.js - Função updateMe
 export const updateMe = async (req, res) => {
   try {
-    const allowedFields = [
+    const camposPermitidos = [
       'nome',
       'telefone',
-      'endereco',
       'bairro',
-      'cep',
-      'cidade',
-      'estado',
       'profissao',
-      'organizacao',
+      'nomeComercial',
+      'categoria',
       'bio',
-      'avatar',
-      'coordenadas',
+      'visivelNoCatalogo', // Interruptor LGPD (RF-05)
     ];
-    const updates = {};
 
-    allowedFields.forEach((field) => {
-      if (req.body[field] !== undefined) {
-        updates[field] = req.body[field];
+    const atualizacoes = {};
+    for (const campo of camposPermitidos) {
+      if (req.body[campo] !== undefined) {
+        atualizacoes[campo] = req.body[campo];
       }
-    });
+    }
 
-    const updatedUser = await User.findByIdAndUpdate(
+    const usuarioAtualizado = await User.findByIdAndUpdate(
       req.user._id,
-      { $set: updates },
+      { $set: atualizacoes },
       { new: true, runValidators: true }
-    );
+    ).select('-senha -cpfParticular -enderecoParticular -registroMEI');
 
-    res.json({
-      message: 'Perfil atualizado com sucesso!',
-      user: updatedUser,
+    return res.status(200).json({
+      message: 'Perfil atualizado com sucesso.',
+      user: usuarioAtualizado,
     });
   } catch (error) {
-    res.status(400).json({ message: 'Erro ao atualizar perfil', error: error.message });
-  }
-};
-
-/**
- * Lista usuários cadastrados com localização para o Mapa Regional
- */
-export const getUsuariosMapa = async (req, res) => {
-  try {
-    const { search, tipo, bairro, cidade } = req.query;
-    const filter = { ativo: true };
-
-    if (tipo && tipo !== 'todos') {
-      filter.tipo = tipo;
-    }
-
-    if (bairro && bairro !== 'todos') {
-      filter.bairro = { $regex: escapeRegex(bairro), $options: 'i' };
-    }
-
-    if (cidade && cidade !== 'todas') {
-      filter.cidade = { $regex: escapeRegex(cidade), $options: 'i' };
-    }
-
-    if (search) {
-      const sanitized = escapeRegex(search);
-      filter.$or = [
-        { nome: { $regex: sanitized, $options: 'i' } },
-        { profissao: { $regex: sanitized, $options: 'i' } },
-        { organizacao: { $regex: sanitized, $options: 'i' } },
-        { endereco: { $regex: sanitized, $options: 'i' } },
-        { bairro: { $regex: sanitized, $options: 'i' } },
-        { cidade: { $regex: sanitized, $options: 'i' } },
-      ];
-    }
-
-    // Retorna os dados públicos dos usuários cadastrados para o mapa
-    const usuarios = await User.find(filter)
-      .select('-senha')
-      .sort({ createdAt: -1 });
-
-    res.json(usuarios);
-  } catch (error) {
-    console.error('Erro ao listar usuários no mapa:', error);
-    res.status(500).json({ message: 'Erro ao listar usuários para o mapa', error: error.message });
+    console.error('Erro ao atualizar perfil:', error);
+    return res.status(500).json({ message: 'Erro ao atualizar dados do perfil.', error: error.message });
   }
 };

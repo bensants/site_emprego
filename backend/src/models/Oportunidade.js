@@ -1,10 +1,11 @@
+// backend/src/models/Oportunidade.js
 import mongoose from 'mongoose';
 
 const OportunidadeSchema = new mongoose.Schema(
   {
     titulo: {
       type: String,
-      required: [true, 'O título da oportunidade é obrigatório'],
+      required: [true, 'O título da oportunidade/demanda é obrigatório'],
       trim: true,
     },
     descricao: {
@@ -13,22 +14,26 @@ const OportunidadeSchema = new mongoose.Schema(
     },
     tipo: {
       type: String,
-      enum: ['emprego', 'freelance', 'projeto', 'servico'],
-      default: 'emprego',
+      enum: ['freelance', 'servico', 'emprego', 'projeto'],
+      default: 'servico',
     },
     categoria: {
       type: String,
-      default: 'Geral',
+      default: 'Obras, Reformas e Manutenção Residencial',
       trim: true,
+    },
+    orcamentoPrevisto: {
+      type: Number,
+      default: null,
     },
     salario: {
       type: String,
-      default: '',
+      default: 'A combinar',
       trim: true,
     },
-    empresa: {
+    bairro: {
       type: String,
-      default: 'Empresa Regional de Óbidos',
+      default: 'Centro',
       trim: true,
     },
     localizacao: {
@@ -36,28 +41,15 @@ const OportunidadeSchema = new mongoose.Schema(
       default: 'Óbidos, PA',
       trim: true,
     },
-    modalidade: {
-      type: String,
-      enum: ['presencial', 'remoto', 'hibrido'],
-      default: 'presencial',
-    },
-    tipo_contrato: {
-      type: String,
-      default: 'CLT',
-      trim: true,
-    },
-    requisitos: {
-      type: [String],
-      default: [],
-    },
-    beneficios: {
-      type: [String],
-      default: [],
-    },
     status: {
       type: String,
+      enum: ['aberta', 'em_andamento', 'concluida', 'cancelada'],
       default: 'aberta',
       trim: true,
+    },
+    contatoPreferencial: {
+      type: String,
+      default: '',
     },
     usuario_id: {
       type: mongoose.Schema.Types.ObjectId,
@@ -71,4 +63,3 @@ const OportunidadeSchema = new mongoose.Schema(
 );
 
 export default mongoose.model('Oportunidade', OportunidadeSchema);
-

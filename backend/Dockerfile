@@ -18,7 +18,7 @@ ENV PORT=5000
 COPY package*.json ./
 
 # Instalar dependências de produção de forma determinística
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm install --omit=dev && npm cache clean --force
 
 # Copiar o restante do código da aplicação com as permissões do usuário node
 COPY --chown=node:node . .
