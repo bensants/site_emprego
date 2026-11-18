@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import { escapeRegex } from '../utils/sanitize.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'obidos_connect_secret_key_2026_jwt_token_auth';
 const JWT_EXPIRES_IN = '7d';

@@ -36,11 +36,6 @@ const UserSchema = new mongoose.Schema(
       default: '',
       trim: true,
     },
-    bairro: {
-      type: String,
-      default: '',
-      trim: true,
-    },
     cep: {
       type: String,
       default: '',

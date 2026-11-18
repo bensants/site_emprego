@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 
 import authRoutes from './routes/authRoutes.js';
 import oportunidadeRoutes from './routes/oportunidadeRoutes.js';
-import User from './models/User.js';
+import User from './models/User.js'; 
 
 dotenv.config();
 

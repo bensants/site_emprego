@@ -80,7 +80,7 @@ async function seedDatabase() {
       },
     ]);
 
-    console.log('✅ Base populada com prestadores de Óbidos/PA!');
+    console.log('✅ Base populada com prestadores ficticios.');
     process.exit(0);
   } catch (error) {
     console.error('❌ Erro no Seed:', error);

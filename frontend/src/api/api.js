@@ -48,13 +48,10 @@ export const authApi = {
   register: (data) => api.post('/auth/register', data).then((res) => res.data),
   getMe: () => api.get('/auth/me').then((res) => res.data),
   updateMe: (data) => api.put('/auth/me', data).then((res) => res.data),
-  getMapa: (params) => api.get('/auth/mapa', { params }).then((res) => res.data),
 };
 
-// Endpoints de Usuários e Geolocalização
-export const usuariosApi = {
-  getMapa: (params) => api.get('/auth/mapa', { params }).then((res) => res.data),
-};
+// Endpoints de Usuários e Geolocalização (Descontinuado na V1.5 em favor da Vitrine de Prestadores /prestadores)
+export const usuariosApi = {};
 
 // Prestadores de Serviços (Catálogo de MEIs / Autônomos em Óbidos)
 export const prestadoresApi = {
